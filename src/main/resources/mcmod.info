@@ -1,0 +1,16 @@
+[
+{
+  "modid": "mindshaft",
+  "name": "Mindshaft",
+  "description": "A particular kind of minimap mod.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["esotericist"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
