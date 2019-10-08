@@ -12,14 +12,14 @@ import net.minecraftforge.common.config.ConfigManager;
 
 public class mindshaftConfig  {
 
-    @Config.Comment("Enable Mindshaft.")
+    @Config.Comment("Whether Mindshaft is currently enabled.")
     public static boolean enabled = false;
 
-    @Config.Comment({"Zoom level.","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across."})
+    @Config.Comment({"Current zoom level.","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across."})
     @RangeInt(min=0, max=2)
     public static int zoom = 2;
     
-    @Config.Comment({"Minimap Size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
+    @Config.Comment({"Minimap size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
                     "Since the minimap is a square, it'll be the same width as height."})
     @RangeInt(min=10, max=50)
     public static int mapwidth = 20;
@@ -38,8 +38,29 @@ public class mindshaftConfig  {
     @RangeInt(min=0,max=100)
     public static int offsetY = 0;    
     
+    @Config.Comment({"Fullscreen minimap size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
+    "Since the minimap is a square, it'll be the same width as height."})
+    @RangeInt(min=30, max=100)
+    public static int fsmapwidth = 80;
+
+    @Config.Comment({"Cursor size.","This is an arbitrary measurement, set to 16 by default."})
+    @RangeInt(min=1, max=30)
+    public static int cursorsize = 16;
+
+    @Config.Comment({"Fullscreen cursor size.","This is an arbitrary measurement, set to 32 by default."})
+    @RangeInt(min=1, max=30)
+    public static int fscursorsize = 32;
+
+    @Config.Comment({"Cursor opacity.","100 is fully opaque, 0 is invisible."})
+    @RangeInt(min=0, max=100)
+    public static int cursoropacity = 100;
+
     public static double getMapsize() {
         return (double) mapwidth / 100.0;
+    }
+    
+    public static double getFSMapsize() {
+        return (double) fsmapwidth / 100.0;
     }
     
     public static double getOffsetX() {
@@ -48,6 +69,11 @@ public class mindshaftConfig  {
 
     public static double getOffsetY() {
         return (double) offsetY / 100.0;
+    }
+    
+
+    public static float  getCursorOpacity() {
+        return (float) cursoropacity / (float) 100.0;
     }
     
     private static void refresh() {

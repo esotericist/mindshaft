@@ -74,6 +74,8 @@ public class Mindshaft
     private ResourceLocation playericon;
     private int[] mapTextureData;
     private EntityPlayer player;
+
+    private boolean fullscreen = false;
     
     private int layer = 0;
     
@@ -163,6 +165,19 @@ public class Mindshaft
         }
         if (!keyBindings[0].isPressed() && pressed[0]) {
             pressed[0] = false;
+        }
+
+        // binding 1: fullscreen toggle
+        // this doesn't have a config entry because it isn't meant to be persistent across sessions.
+        if (keyBindings[1].isPressed() && !pressed[1]) {
+            if (fullscreen == false) {
+                fullscreen = true;
+            } else {
+                fullscreen = false;
+            }
+        }
+        if (!keyBindings[1].isPressed() && pressed[1]) {
+            pressed[1] = false;
         }
 
         // binding 2: zoom in
@@ -364,7 +379,7 @@ public class Mindshaft
 
         textureManager.bindTexture(location);
         
-        double fudge = 0.00390625; // 1 / 256;
+        double fudge = 0.00390625; // evaluation of 1 / 256
         
         double offsetU = (player.posX - lastX) * fudge;
         double offsetV = (player.posZ - lastZ) * fudge;
@@ -373,6 +388,7 @@ public class Mindshaft
         double screenY = event.getResolution().getScaledHeight();
         
         double mapsize = mindshaftConfig.getMapsize() * screenY;
+        double fsmapsize = mindshaftConfig.getFSMapsize() * screenY;
 
         double offsetX = mindshaftConfig.getOffsetX() * screenX;
         double offsetY = mindshaftConfig.getOffsetY() * screenY;    
@@ -381,6 +397,16 @@ public class Mindshaft
         double minY;// = 0.0;
         double maxX;// = event.getResolution().getScaledHeight() * 0.20; // 127.0;
         double maxY;// = maxX; // 127.0;
+
+
+        int cursorsize = mindshaftConfig.cursorsize;
+
+        if (fullscreen == true) {
+            offsetX = (screenX - fsmapsize) / 2;
+            offsetY = (screenY - fsmapsize) / 2;
+            mapsize = fsmapsize;
+            cursorsize = mindshaftConfig.fscursorsize;
+        }
 
         if (mindshaftConfig.offsetfromleft) {
             minX = offsetX;
@@ -431,6 +457,8 @@ public class Mindshaft
         
         GlStateManager.pushMatrix();
 
+        GlStateManager.color(1f,1f,1f, mindshaftConfig.getCursorOpacity());
+
         textureManager.bindTexture(playericon);
 
         GlStateManager.enableAlpha();
@@ -440,11 +468,11 @@ public class Mindshaft
         
         minX = 0;
         minY = 0;
-        maxX = 16;
-        maxY = 16;
+        maxX = cursorsize;
+        maxY = maxX;
 
         GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate(-7.5, -7.5, 0);
+        GlStateManager.translate(-(maxX / 2), -(maxY / 2), 0);
         
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
@@ -453,6 +481,8 @@ public class Mindshaft
         renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
         tessellator.draw();
 
+
+        GlStateManager.color(1,1,1,1);
         GlStateManager.disableAlpha();
         GlStateManager.popMatrix();
        
@@ -500,9 +530,9 @@ public class Mindshaft
         pressed = new boolean[4];
         
         keyBindings[0] = new KeyBinding("mindshaft.key.toggle.desc", Keyboard.KEY_NUMPAD1, "mindshaft.key.category");
-        keyBindings[1] = new KeyBinding("mindshaft.key.bigmap.desc", Keyboard.KEY_NUMPAD2, "mindshaft.key.category");
-        keyBindings[2] = new KeyBinding("mindshaft.key.zoomin.desc", Keyboard.KEY_NUMPAD5, "mindshaft.key.category");
-        keyBindings[3] = new KeyBinding("mindshaft.key.zoomout.desc", Keyboard.KEY_NUMPAD4, "mindshaft.key.category");
+        keyBindings[1] = new KeyBinding("mindshaft.key.fullscreen.desc", Keyboard.KEY_NUMPAD2, "mindshaft.key.category");
+        keyBindings[2] = new KeyBinding("mindshaft.key.zoomin.desc", Keyboard.KEY_NUMPAD6, "mindshaft.key.category");
+        keyBindings[3] = new KeyBinding("mindshaft.key.zoomout.desc", Keyboard.KEY_NUMPAD3, "mindshaft.key.category");
         
         for (int i = 0; i < keyBindings.length; ++i) {
             ClientRegistry.registerKeyBinding(keyBindings[i]);
