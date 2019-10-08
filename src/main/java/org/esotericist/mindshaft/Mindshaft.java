@@ -418,13 +418,20 @@ public class Mindshaft
         double maxU = zoomlist[mindshaftConfig.zoom].maxU + offsetU; // 1.0;
         double maxV = zoomlist[mindshaftConfig.zoom].maxV + offsetV; // 1.0;
         
+        GlStateManager.disableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.resetColor();
+        GlStateManager.disableLighting();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        // renderer.color(255, 255, 255, 0);
         renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
         renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
         renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
         renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
         tessellator.draw();
+
+        GlStateManager.enableBlend();
 
         minU = 0.0;
         minV = 0.0;
