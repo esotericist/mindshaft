@@ -1,4 +1,4 @@
-package net.esotericist.mindshaft;
+package org.esotericist.mindshaft;
 
 
 import net.minecraft.client.renderer.BufferBuilder;
@@ -375,7 +375,7 @@ public class Mindshaft
         
         double offsetU = (player.posX - lastX) * fudge;
         double offsetV = (player.posZ - lastZ) * fudge;
-        
+
         double screenX = event.getResolution().getScaledWidth();
         double screenY = event.getResolution().getScaledHeight();
         
@@ -425,7 +425,7 @@ public class Mindshaft
         renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
         renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
         tessellator.draw();
-        
+
         minU = 0.0;
         minV = 0.0;
         maxU = 1.0;

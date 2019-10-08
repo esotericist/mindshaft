@@ -1,4 +1,4 @@
-package net.esotericist.mindshaft;
+package org.esotericist.mindshaft;
 
 
 import net.minecraftforge.common.config.Config;
