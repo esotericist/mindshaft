@@ -499,10 +499,10 @@ public class Mindshaft
         keyBindings = new KeyBinding[4];
         pressed = new boolean[4];
         
-        keyBindings[0] = new KeyBinding("key.toggle.desc", Keyboard.KEY_NUMPAD1, "key.mindshaft.category");
-        keyBindings[1] = new KeyBinding("key.location.desc", Keyboard.KEY_NUMPAD2, "key.mindshaft.category");
-        keyBindings[2] = new KeyBinding("key.zoomin.desc", Keyboard.KEY_NUMPAD3, "key.mindshaft.category");
-        keyBindings[3] = new KeyBinding("key.zoomout.desc", Keyboard.KEY_NUMPAD4, "key.mindshaft.category");
+        keyBindings[0] = new KeyBinding("mindshaft.key.toggle.desc", Keyboard.KEY_NUMPAD1, "mindshaft.key.category");
+        keyBindings[1] = new KeyBinding("mindshaft.key.bigmap.desc", Keyboard.KEY_NUMPAD2, "mindshaft.key.category");
+        keyBindings[2] = new KeyBinding("mindshaft.key.zoomin.desc", Keyboard.KEY_NUMPAD5, "mindshaft.key.category");
+        keyBindings[3] = new KeyBinding("mindshaft.key.zoomout.desc", Keyboard.KEY_NUMPAD4, "mindshaft.key.category");
         
         for (int i = 0; i < keyBindings.length; ++i) {
             ClientRegistry.registerKeyBinding(keyBindings[i]);
