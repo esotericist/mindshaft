@@ -2,22 +2,9 @@ package org.esotericist.mindshaft;
 
 
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Config.Comment;
-import net.minecraftforge.common.config.Config.LangKey;
-import net.minecraftforge.common.config.Config.Name;
-import net.minecraftforge.common.config.Config.RangeDouble;
 import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.Config.Type;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.common.config.Property;
-
-
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 
 
 @Config(modid = Mindshaft.MODID, type = Type.INSTANCE)

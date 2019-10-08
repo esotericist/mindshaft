@@ -3,35 +3,27 @@ package org.esotericist.mindshaft;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.block.state.IBlockProperties;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.WorldServer;
 
-import net.minecraftforge.fluids.*;
+// import net.minecraftforge.fluids.*;
 
 
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Configuration;
 
 import net.minecraftforge.common.config.ConfigManager;
 
@@ -41,7 +33,6 @@ import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -127,6 +118,7 @@ public class Mindshaft
     
     
     // not currently used, keeping it around in case that changes again
+    /*
     private boolean isLiquid(World world, BlockPos pos) {
         Block blockID = world.getBlockState(pos).getBlock();
         boolean liquid = false;
@@ -141,6 +133,7 @@ public class Mindshaft
         }
         return liquid;    
     }
+    */
     
     private int clamp (int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -360,7 +353,7 @@ public class Mindshaft
     @SubscribeEvent //(priority = EventPriority.NORMAL)
     public void eventHandler(RenderGameOverlayEvent.Post event) {
     
-        Minecraft mc = Minecraft.getMinecraft();
+        // Minecraft mc = Minecraft.getMinecraft();
         
         if ((!mindshaftConfig.enabled) || (player == null )) {
             return;
@@ -383,9 +376,6 @@ public class Mindshaft
 
         double offsetX = mindshaftConfig.getOffsetX() * screenX;
         double offsetY = mindshaftConfig.getOffsetY() * screenY;    
-        
-        double leftX;
-        double rightX;
         
         double minX;// = 0.0;
         double minY;// = 0.0;
