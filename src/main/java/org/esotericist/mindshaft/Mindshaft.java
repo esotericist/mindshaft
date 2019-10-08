@@ -220,8 +220,8 @@ public class Mindshaft
                     continue;
                 }
 
-
-                BlockPos pos = new BlockPos(playerPos.getX()+x,playerPos.getY()+y,playerPos.getZ()+z);
+                
+                BlockPos pos = new BlockPos(playerPos.getX()+x,player.posY - (17 / 32D)+y,playerPos.getZ()+z);
                 IBlockState state = world.getBlockState(pos);
                 Block blockID = state.getBlock();
                 boolean solid = true;
