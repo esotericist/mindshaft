@@ -115,6 +115,18 @@ public class Mindshaft
             this.layerrate = layerrate;
             this.overdraw = overdraw;
         }
+
+        public void setZoomState( int size, float layerrate, int overdraw ) {
+            int w = size;
+            int h = size;
+            int x = -(w / 2) + 1;
+            int z = x;
+            double minU = (128 + x) * 1 / 256D;
+            double minV = minU;
+            double maxU = 1D - minU;
+            double maxV = maxU;
+            setZoomState(x, z, w, h, minU, minV, maxU, maxV, layerrate, overdraw);
+        }
     }
     
     
@@ -310,6 +322,9 @@ public class Mindshaft
     
     private void processBlocks(World world, BlockPos playerPos) {
     
+        if( mindshaftConfig.zoom > zoomlist.length ) {
+            mindshaftConfig.zoom = zoomlist.length - 1;
+        }
         nextlayer = nextlayer + zoomlist[mindshaftConfig.zoom].layerrate;
         
         while (nextlayer >= 1.0F) {
@@ -379,10 +394,10 @@ public class Mindshaft
 
         textureManager.bindTexture(location);
         
-        double fudge = 0.00390625; // evaluation of 1 / 256
-        
-        double offsetU = (player.posX - lastX) * fudge;
-        double offsetV = (player.posZ - lastZ) * fudge;
+        double fudge = 1 / 256D;
+
+        double offsetU = (player.posX - lastX - 1) * fudge;
+        double offsetV = (player.posZ - lastZ - 1) * fudge;
 
         double screenX = event.getResolution().getScaledWidth();
         double screenY = event.getResolution().getScaledHeight();
@@ -463,7 +478,8 @@ public class Mindshaft
 
         GlStateManager.enableAlpha();
 
-        GlStateManager.translate(minX + (mapsize /2)-(mapsize/64),minY + (mapsize / 2)-(mapsize/64), 0);
+        GlStateManager.translate(minX + (mapsize / 2 ),
+                                 minY + (mapsize / 2), 0);
         
         
         minX = 0;
@@ -472,7 +488,7 @@ public class Mindshaft
         maxY = maxX;
 
         GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate(-(maxX / 2), -(maxY / 2), 0);
+        GlStateManager.translate( -( maxX / 2 ), -( maxY / 2), 0);
         
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
@@ -490,14 +506,32 @@ public class Mindshaft
 
     
 
+    private void initzooms() {
+
+        int zoomcount = mindshaftConfig.zoomlevels.length;
+        zoomlist = new zoomstate[ zoomcount ];
+        Arrays.setAll(zoomlist, (i) -> new zoomstate());
+
+        for( int i = 0; i < zoomcount; ++i ) {
+            int zoomsize = mindshaftConfig.zoomlevels[i];
+            int layerrate = 512 / zoomsize;
+            zoomlist[i].setZoomState( zoomsize, layerrate, 30);
+        }
+        for( int i = 0; i < zoomcount; ++i ) {
+            logger.info("zoomlist: " + i +  ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:" + zoomlist[i].w + ", minU:" + zoomlist[i].minU + ", minV:" + zoomlist[i].minV + ", maxU:" + zoomlist[i].maxU + ", maxV:" + zoomlist[i].maxV );
+        }
+    }
+
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
     
         if (event.getModID().equals(Mindshaft.MODID)) {
-        logger.debug("enabled: ", mindshaftConfig.enabled);
             ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
-        logger.debug("enabled: ", mindshaftConfig.enabled);
+            initzooms();
+            if( mindshaftConfig.zoom > zoomlist.length ) {
+                mindshaftConfig.zoom = zoomlist.length -1;
+            }
         }
     }
 
@@ -539,17 +573,19 @@ public class Mindshaft
             pressed[i] = false;
         }
         
-        logger.debug("enabled: ", mindshaftConfig.enabled);
         ConfigManager.sync(MODID, Config.Type.INSTANCE);
-        logger.debug("enabled: ", mindshaftConfig.enabled);
         
+        initzooms();
         
-        zoomlist = new zoomstate[3];
-        Arrays.setAll(zoomlist, (i) -> new zoomstate());
-        
+        /*
         zoomlist[0].setZoomState(-96,-96,192,192,0.125D,0.125D,0.875D,0.875D,1.20F, 30);
         zoomlist[1].setZoomState(-63,-63,128,128,0.25D,0.25D,0.75D,0.75D, 3.5F, 24);
         zoomlist[2].setZoomState(-31,-31,64,64,0.375D,0.375D,0.625D,0.625D, 8.0F, 16);
+        zoomlist[0].setZoomState(192, 1.20F, 30);
+        zoomlist[1].setZoomState(128, 3.5F, 24);
+        zoomlist[2].setZoomState(64, 8.0F, 16);
+        */
+
     }
 
 

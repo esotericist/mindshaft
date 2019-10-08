@@ -15,9 +15,13 @@ public class mindshaftConfig  {
     @Config.Comment("Whether Mindshaft is currently enabled.")
     public static boolean enabled = false;
 
-    @Config.Comment({"Current zoom level.","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across."})
-    @RangeInt(min=0, max=2)
-    public static int zoom = 2;
+    @Config.Comment({"List of zoom levels.", ""})
+    @RangeInt(min = 16, max=192)
+    public static int[] zoomlevels = { 192, 128, 64, 32 };
+
+    @Config.Comment({"Current zoom level.","Default zoom levels:","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across.","3: 32 blocks across."})
+    @RangeInt(min=0, max=255)
+    public static int zoom = 3;
     
     @Config.Comment({"Minimap size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
                     "Since the minimap is a square, it'll be the same width as height."})
