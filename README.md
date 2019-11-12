@@ -1,5 +1,9 @@
 # mindshaft
 
+[![mindshaft video](http://img.youtube.com/vi/aD1kQqTtkgU/0.jpg)](http://www.youtube.com/watch?v=aD1kQqTtkgU)
+<-- clickable video
+
+
 a density-focused minimap, loosely inspired by Rei's Minimap of the days of yore.
 
 has: fullscreen toggle, configurable zoom levels, an ugly player cursor, a fairly esoteric indicator of whether voids are above or below player, and a small amount of stutter to rendering that will probably drive some people spare
