@@ -478,8 +478,8 @@ public class Mindshaft
 
         GlStateManager.enableAlpha();
 
-        GlStateManager.translate(minX + (mapsize / 2 ),
-                                 minY + (mapsize / 2), 0);
+        GlStateManager.translate(minX + ((mapsize + 1) / 2 ),
+                                 minY + ((mapsize + 1) / 2), 0);
         
         
         minX = 0;
