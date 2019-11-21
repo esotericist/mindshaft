@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
+//import net.minecraft.world.gen.structure.MapGenMineshaft;
 
 // import net.minecraftforge.fluids.*;
 
@@ -75,8 +76,6 @@ public class Mindshaft
     private int[] mapTextureData;
     private EntityPlayer player;
 
-    private boolean fullscreen = false;
-    
     private int layer = 0;
     
     private int startX = 0;
@@ -86,10 +85,12 @@ public class Mindshaft
     
     private float nextlayer = 0;
     
-    private zoomstate[] zoomlist; 
+    private zoomspec[] zoomlist; 
+
+    private zoomstate zoom =  new zoomstate();
     
     
-    class zoomstate {
+    class zoomspec {
         public int x;
         public int z;
         public int w;
@@ -101,7 +102,7 @@ public class Mindshaft
         public float layerrate;
         public int overdraw;
         
-        public void setZoomState(int x, int z, int w, int h, 
+        public void setZoomSpec(int x, int z, int w, int h, 
             double minU, double minV, double maxU, double maxV, float layerrate, int overdraw) {
             
             this.x = x;
@@ -116,7 +117,7 @@ public class Mindshaft
             this.overdraw = overdraw;
         }
 
-        public void setZoomState( int size, float layerrate, int overdraw ) {
+        public void setZoomSpec( int size, float layerrate, int overdraw ) {
             int w = size;
             int h = size;
             int x = -(w / 2) + 1;
@@ -125,10 +126,52 @@ public class Mindshaft
             double minV = minU;
             double maxU = 1D - minU;
             double maxV = maxU;
-            setZoomState(x, z, w, h, minU, minV, maxU, maxV, layerrate, overdraw);
+            setZoomSpec(x, z, w, h, minU, minV, maxU, maxV, layerrate, overdraw);
         }
     }
     
+    class zoomstate  {
+        public boolean fullscreen = false;
+
+        public int getZoom() {
+            int curzoom;
+            if( fullscreen ) {
+                curzoom = mindshaftConfig.zoomfs;
+            } else {
+                curzoom = mindshaftConfig.zoom;
+            }
+            if( curzoom >= zoomlist.length ) {
+                curzoom = zoomlist.length - 1;
+            }
+            return curzoom;
+        }
+
+        public void nextZoom() {
+            int newzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+            newzoom++;
+            if( newzoom >= zoomlist.length ) {
+                newzoom = 0;
+            }
+            if( fullscreen ) {
+                mindshaftConfig.setFSZoom(newzoom);
+            } else {
+                mindshaftConfig.setZoom(newzoom);
+            }
+        }
+
+        public void prevZoom() {
+            int newzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+            newzoom--;
+            if( newzoom < 0 ) {
+                newzoom = zoomlist.length - 1;
+            }
+            if( fullscreen ) {
+                mindshaftConfig.setFSZoom(newzoom);
+            } else {
+                mindshaftConfig.setZoom(newzoom);
+            }
+        }
+    }
     
     
     // not currently used, keeping it around in case that changes again
@@ -182,10 +225,10 @@ public class Mindshaft
         // binding 1: fullscreen toggle
         // this doesn't have a config entry because it isn't meant to be persistent across sessions.
         if (keyBindings[1].isPressed() && !pressed[1]) {
-            if (fullscreen == false) {
-                fullscreen = true;
+            if (zoom.fullscreen == false) {
+                zoom.fullscreen = true;
             } else {
-                fullscreen = false;
+                zoom.fullscreen = false;
             }
         }
         if (!keyBindings[1].isPressed() && pressed[1]) {
@@ -194,7 +237,7 @@ public class Mindshaft
 
         // binding 2: zoom in
         if (keyBindings[2].isPressed() && !pressed[2]) {
-            mindshaftConfig.setZoom(mindshaftConfig.zoom + 1, zoomlist.length);
+            zoom.nextZoom();
             pressed[2] = true;
         }
         if (!keyBindings[2].isPressed() && pressed[2]) {
@@ -203,7 +246,7 @@ public class Mindshaft
 
         // binding 3: zoom out
         if (keyBindings[3].isPressed() && !pressed[3]) {
-            mindshaftConfig.setZoom(mindshaftConfig.zoom - 1, zoomlist.length);
+            zoom.prevZoom();
             pressed[3] = true;
         }
         if (!keyBindings[3].isPressed() && pressed[3]) {
@@ -215,11 +258,12 @@ public class Mindshaft
     private void processLayer(World world, BlockPos playerPos) {
 
         int y = layer - 15;
-        int overdraw = zoomlist[mindshaftConfig.zoom].overdraw;
-        int minX = zoomlist[mindshaftConfig.zoom].x - overdraw;
-        int minZ = zoomlist[mindshaftConfig.zoom].z - overdraw;
-        int maxX = zoomlist[mindshaftConfig.zoom].w / 2 + overdraw;
-        int maxZ = zoomlist[mindshaftConfig.zoom].h / 2 + overdraw;
+        int curzoom = zoom.getZoom();
+        int overdraw = zoomlist[curzoom].overdraw;
+        int minX = zoomlist[curzoom].x - overdraw;
+        int minZ = zoomlist[curzoom].z - overdraw;
+        int maxX = zoomlist[curzoom].w / 2 + overdraw;
+        int maxZ = zoomlist[curzoom].h / 2 + overdraw;
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -322,10 +366,8 @@ public class Mindshaft
     
     private void processBlocks(World world, BlockPos playerPos) {
     
-        if( mindshaftConfig.zoom > zoomlist.length ) {
-            mindshaftConfig.zoom = zoomlist.length - 1;
-        }
-        nextlayer = nextlayer + zoomlist[mindshaftConfig.zoom].layerrate;
+        int curzoom = zoom.getZoom();
+        nextlayer = nextlayer + zoomlist[curzoom].layerrate;
         
         while (nextlayer >= 1.0F) {
         
@@ -413,10 +455,11 @@ public class Mindshaft
         double maxX;// = event.getResolution().getScaledHeight() * 0.20; // 127.0;
         double maxY;// = maxX; // 127.0;
 
+        int curzoom = zoom.getZoom();
 
         int cursorsize = mindshaftConfig.cursorsize;
 
-        if (fullscreen == true) {
+        if (zoom.fullscreen == true) {
             offsetX = (screenX - fsmapsize) / 2;
             offsetY = (screenY - fsmapsize) / 2;
             mapsize = fsmapsize;
@@ -444,10 +487,10 @@ public class Mindshaft
         
         
         
-        double minU = zoomlist[mindshaftConfig.zoom].minU + offsetU; // 0.0;
-        double minV = zoomlist[mindshaftConfig.zoom].minV + offsetV; // 0.0;
-        double maxU = zoomlist[mindshaftConfig.zoom].maxU + offsetU; // 1.0;
-        double maxV = zoomlist[mindshaftConfig.zoom].maxV + offsetV; // 1.0;
+        double minU = zoomlist[curzoom].minU + offsetU; // 0.0;
+        double minV = zoomlist[curzoom].minV + offsetV; // 0.0;
+        double maxU = zoomlist[curzoom].maxU + offsetU; // 1.0;
+        double maxV = zoomlist[curzoom].maxV + offsetV; // 1.0;
         
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
@@ -509,13 +552,13 @@ public class Mindshaft
     private void initzooms() {
 
         int zoomcount = mindshaftConfig.zoomlevels.length;
-        zoomlist = new zoomstate[ zoomcount ];
-        Arrays.setAll(zoomlist, (i) -> new zoomstate());
+        zoomlist = new zoomspec[ zoomcount ];
+        Arrays.setAll(zoomlist, (i) -> new zoomspec());
 
         for( int i = 0; i < zoomcount; ++i ) {
             int zoomsize = mindshaftConfig.zoomlevels[i];
             int layerrate = 512 / zoomsize;
-            zoomlist[i].setZoomState( zoomsize, layerrate, 30);
+            zoomlist[i].setZoomSpec( zoomsize, layerrate, 30);
         }
         for( int i = 0; i < zoomcount; ++i ) {
             logger.info("zoomlist: " + i +  ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:" + zoomlist[i].w + ", minU:" + zoomlist[i].minU + ", minV:" + zoomlist[i].minV + ", maxU:" + zoomlist[i].maxU + ", maxV:" + zoomlist[i].maxV );
@@ -530,7 +573,10 @@ public class Mindshaft
             ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
             initzooms();
             if( mindshaftConfig.zoom > zoomlist.length ) {
-                mindshaftConfig.zoom = zoomlist.length -1;
+                mindshaftConfig.setZoom(zoomlist.length - 1 );
+            }
+            if( mindshaftConfig.zoomfs > zoomlist.length ) {
+                mindshaftConfig.setFSZoom(zoomlist.length - 1 );
             }
         }
     }
@@ -577,15 +623,6 @@ public class Mindshaft
         
         initzooms();
         
-        /*
-        zoomlist[0].setZoomState(-96,-96,192,192,0.125D,0.125D,0.875D,0.875D,1.20F, 30);
-        zoomlist[1].setZoomState(-63,-63,128,128,0.25D,0.25D,0.75D,0.75D, 3.5F, 24);
-        zoomlist[2].setZoomState(-31,-31,64,64,0.375D,0.375D,0.625D,0.625D, 8.0F, 16);
-        zoomlist[0].setZoomState(192, 1.20F, 30);
-        zoomlist[1].setZoomState(128, 3.5F, 24);
-        zoomlist[2].setZoomState(64, 8.0F, 16);
-        */
-
     }
 
 

@@ -23,6 +23,10 @@ public class mindshaftConfig  {
     @RangeInt(min=0, max=255)
     public static int zoom = 3;
     
+    @Config.Comment({"Current fullscreen zoom level.","Default zoom levels:","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across.","3: 32 blocks across."})
+    @RangeInt(min=0, max=255)
+    public static int zoomfs = 3;
+
     @Config.Comment({"Minimap size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
                     "Since the minimap is a square, it'll be the same width as height."})
     @RangeInt(min=10, max=50)
@@ -90,16 +94,14 @@ public class mindshaftConfig  {
         refresh();
     
     }
-    
-    public static void setZoom(int value, int max) {
-        zoom = value;
-        if (zoom >= max) {
-            zoom = max - 1;
-        }
 
-        if (zoom <0) {
-            zoom = 0;
-        }
+    public static void setZoom( int value ) {
+        zoom = value;
+        refresh();
+    }
+
+    public static void setFSZoom( int value ) {
+        zoomfs = value;
         refresh();
     }
 
