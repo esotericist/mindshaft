@@ -19,13 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
-//import net.minecraft.world.gen.structure.MapGenMineshaft;
-
-// import net.minecraftforge.fluids.*;
-
 
 import net.minecraftforge.common.config.Config;
-
 import net.minecraftforge.common.config.ConfigManager;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -40,7 +35,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.input.Keyboard;
 
@@ -48,11 +42,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.Math;
 import java.util.Arrays;
-
-
-
-
-
 
 @Mod(modid = Mindshaft.MODID, name = Mindshaft.NAME, //version = Mindshaft.VERSION, 
     clientSideOnly = true, dependencies = "after:forge@[14.23.4.2705,)")
@@ -88,26 +77,6 @@ public class Mindshaft
     private zoomspec[] zoomlist; 
 
     private zoomstate zoom =  new zoomstate();
-    
-    
-    
-    // not currently used, keeping it around in case that changes again
-    /*
-    private boolean isLiquid(World world, BlockPos pos) {
-        Block blockID = world.getBlockState(pos).getBlock();
-        boolean liquid = false;
-        if (Block.isEqualTo(blockID, Blocks.WATER) || Block.isEqualTo(blockID, Blocks.FLOWING_WATER)) {
-            liquid = true;
-        }
-        if (Block.isEqualTo(blockID, Blocks.LAVA) || Block.isEqualTo(blockID, Blocks.FLOWING_LAVA)) {
-            liquid = true;
-        }
-        if (blockID instanceof IFluidBlock) {
-            liquid = true;
-        }
-        return liquid;    
-    }
-    */
     
     private int clamp (int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -278,7 +247,6 @@ public class Mindshaft
                 mapTextureData[offset] = color;
             }
         }
-    
     }
     
     private void processBlocks(World world, BlockPos playerPos) {
@@ -301,15 +269,11 @@ public class Mindshaft
                 
                 startX = playerPos.getX();
                 startZ = playerPos.getZ();
-                
             }
             
             processLayer(world, playerPos);
             layer++;
-        
         }
-        
-        
     }
     
 
@@ -335,15 +299,12 @@ public class Mindshaft
                 processBlocks(world, playerPos);
             }
         }
-            
     }
 
 
     @SubscribeEvent //(priority = EventPriority.NORMAL)
     public void eventHandler(RenderGameOverlayEvent.Post event) {
     
-        // Minecraft mc = Minecraft.getMinecraft();
-        
         if ((!mindshaftConfig.enabled) || (player == null )) {
             return;
         }
@@ -353,7 +314,7 @@ public class Mindshaft
 
         textureManager.bindTexture(location);
         
-        double fudge = 1 / 256D;
+        double fudge = 1 / 256D; // the tx size of the underlying texture
 
         double offsetU = (player.posX - lastX - 1) * fudge;
         double offsetV = (player.posZ - lastZ - 1) * fudge;
@@ -398,11 +359,7 @@ public class Mindshaft
         } else {
             maxY = screenY - offsetY;
             minY = maxY - mapsize;
-
         }
-        
-        
-        
         
         double minU = zoomlist[curzoom].minU + offsetU; // 0.0;
         double minV = zoomlist[curzoom].minV + offsetV; // 0.0;
@@ -415,7 +372,7 @@ public class Mindshaft
         GlStateManager.disableLighting();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        // renderer.color(255, 255, 255, 0);
+
         renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
         renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
         renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
@@ -428,7 +385,6 @@ public class Mindshaft
         minV = 0.0;
         maxU = 1.0;
         maxV = 1.0;
-
         
         GlStateManager.pushMatrix();
 
@@ -440,8 +396,6 @@ public class Mindshaft
 
         GlStateManager.translate(minX + ((mapsize + 1) / 2 ),
                                  minY + ((mapsize + 1) / 2), 0);
-        
-        
         minX = 0;
         minY = 0;
         maxX = cursorsize;
@@ -457,14 +411,10 @@ public class Mindshaft
         renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
         tessellator.draw();
 
-
         GlStateManager.color(1,1,1,1);
         GlStateManager.disableAlpha();
         GlStateManager.popMatrix();
-       
     }
-
-    
 
     private void initzooms() {
 
@@ -483,7 +433,6 @@ public class Mindshaft
         zoom.zoommax = zoomlist.length;
     }
 
-
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
     
@@ -500,26 +449,12 @@ public class Mindshaft
         }
     }
 
-
-/*
-    @SubscribeEvent
-    public void onConfigChangedEvent(ConfigChangedEvent.OnConfigChangedEvent event)
-    {
-        if (event.getModID().equals(MODID))
-        {
-            ConfigManager.sync(MODID, ConfigChangedEvent.Type.INSTANCE);
-        }
-    }
-
-*/
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
         
         MinecraftForge.EVENT_BUS.register(this);
-        
-        
     }
 
     @EventHandler
@@ -541,9 +476,7 @@ public class Mindshaft
         ConfigManager.sync(MODID, Config.Type.INSTANCE);
         
         initzooms();
-        
     }
-
 
     @EventHandler
     public void PostInit(FMLPostInitializationEvent event) {
@@ -559,5 +492,4 @@ public class Mindshaft
         }
         mapTexture.updateDynamicTexture();
     }
-    
 }
