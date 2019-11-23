@@ -58,7 +58,7 @@ public class Mindshaft
     
     private float nextlayer = 0;
 
-    private static mindshaftRenderer renderer = new mindshaftRenderer();
+    private mindshaftRenderer renderer = new mindshaftRenderer();
 
     public static zoomspec[] zoomlist; 
 
@@ -321,10 +321,10 @@ public class Mindshaft
             ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
             initzooms();
             if( mindshaftConfig.zoom > zoomlist.length ) {
-                mindshaftConfig.setZoom(zoomlist.length - 1 );
+                mindshaftConfig.setZoom(zoomlist.length - 1, false );
             }
             if( mindshaftConfig.zoomfs > zoomlist.length ) {
-                mindshaftConfig.setFSZoom(zoomlist.length - 1 );
+                mindshaftConfig.setZoom(zoomlist.length - 1, true );
             }
             zoom.zoommax = zoomlist.length;
         }

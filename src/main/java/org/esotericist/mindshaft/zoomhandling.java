@@ -63,11 +63,7 @@ class zoomstate  {
         if( newzoom >= zoommax ) {
             newzoom = 0;
         }
-        if( fullscreen ) {
-            mindshaftConfig.setFSZoom(newzoom);
-        } else {
-            mindshaftConfig.setZoom(newzoom);
-        }
+        mindshaftConfig.setZoom(newzoom, fullscreen);
     }
 
     public void prevZoom() {
@@ -76,10 +72,6 @@ class zoomstate  {
         if( newzoom < 0 ) {
             newzoom = zoommax - 1;
         }
-        if( fullscreen ) {
-            mindshaftConfig.setFSZoom(newzoom);
-        } else {
-            mindshaftConfig.setZoom(newzoom);
-        }
+        mindshaftConfig.setZoom(newzoom, fullscreen);
     }
 }

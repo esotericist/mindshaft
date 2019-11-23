@@ -149,7 +149,7 @@ public class mindshaftRenderer {
         
         GlStateManager.pushMatrix();
 
-        GlStateManager.color(1f,1f,1f, Mindshaft.zoom.fullscreen ?  mindshaftConfig.getFSCursorOpacity() : mindshaftConfig.getCursorOpacity());
+        GlStateManager.color(1f,1f,1f, mindshaftConfig.getCursorOpacity(Mindshaft.zoom.fullscreen));
 
         textureManager.bindTexture(playericon);
 
@@ -157,7 +157,6 @@ public class mindshaftRenderer {
 
         GlStateManager.translate(minX + (mapsize / 2 ),
                                  minY + (mapsize / 2), 0);
-        
         
         minX = 0;
         minY = 0;

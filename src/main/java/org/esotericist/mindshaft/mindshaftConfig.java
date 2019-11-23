@@ -104,12 +104,14 @@ public class mindshaftConfig  {
     }
     
 
-    public static float  getCursorOpacity() {
-        return (float) cursoropacity / (float) 100.0;
-    }
-
-    public static float  getFSCursorOpacity() {
-        return (float) cursoropacityfs / (float) 100.0;
+    public static float  getCursorOpacity( boolean fullscreen ) {
+        float opacity;
+        if( fullscreen ) {
+            opacity = cursoropacityfs;
+        } else {
+            opacity = cursoropacity;
+        }
+        return opacity / (float) 100.0;
     }
 
     private static void refresh() {
@@ -123,26 +125,12 @@ public class mindshaftConfig  {
     
     }
 
-    public static void setZoom( int value ) {
-        zoom = value;
-        refresh();
-    }
-
-    public static void setFSZoom( int value ) {
-        zoomfs = value;
-        refresh();
-    }
-
-/*    @Mod.EventBusSubscriber(modid = Mindshaft.MODID)
-    private static class EventHandler {
-    
-        @SubscribeEvent
-        public static void onConfigChanged(final ConfigChangedEvent.OnConfigChangedEvent event) {
-            if (event.getModID().equals(Mindshaft.MODID)) {
-                ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
-            }
+    public static void setZoom( int value, boolean fullscreen ) {
+        if( fullscreen ) {
+            zoomfs = value;
+        } else {
+            zoom = value;
         }
-    
+        refresh();
     }
-    */
 }
