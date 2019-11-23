@@ -1,13 +1,6 @@
 package org.esotericist.mindshaft;
 
 
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -16,7 +9,6 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
@@ -35,7 +27,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.input.Keyboard;
 
 import org.apache.logging.log4j.Logger;
@@ -51,32 +42,27 @@ public class Mindshaft
     public static final String NAME = "Mindshaft";
     //public static final String VERSION = "1.0";
 
-    private static Logger logger;
+    public static Logger logger;
     
     public static KeyBinding[] keyBindings;
     private boolean[] pressed;
     
     //public static mindshaftConfig config;
         
-    private TextureManager textureManager;
-    private DynamicTexture mapTexture;
-    private ResourceLocation location;
-    private ResourceLocation playericon;
-    private int[] mapTextureData;
-    private EntityPlayer player;
+    public static EntityPlayer player;
 
     private int layer = 0;
     
     private int startX = 0;
     private int startZ = 0;
-    private int lastX = 0;
-    private int lastZ = 0;
     
     private float nextlayer = 0;
-    
-    private zoomspec[] zoomlist; 
 
-    private zoomstate zoom =  new zoomstate();
+    private static mindshaftRenderer renderer = new mindshaftRenderer();
+
+    public static zoomspec[] zoomlist; 
+
+    public static zoomstate zoom =  new zoomstate();
     
     private int clamp (int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -238,13 +224,13 @@ public class Mindshaft
             
                 int offset = (adjX+127)+((adjZ+127)*256);
             
-                oldcolor = mapTextureData[offset];
+                oldcolor = renderer.getTextureData(offset);
                 oldblue = oldcolor & 0xFF;
                 oldgreen = (oldcolor >> 8 ) & 0xFF;
                 oldred = (oldcolor >> 16 ) & 0xFF;
 
                 color = clamp(red+oldred,0,255) << 16 | clamp(green+oldgreen,0,255) << 8 | clamp(blue+oldblue,0,255);
-                mapTextureData[offset] = color;
+                renderer.setTextureValue(offset, color);
             }
         }
     }
@@ -259,12 +245,13 @@ public class Mindshaft
             nextlayer = nextlayer - 1.0F;
             
             if (layer >= 32) {
-                lastX = startX;
-                lastZ = startZ;
-                mapTexture.updateDynamicTexture();
+                renderer.updatePos(startX, startZ);
+                renderer.refreshTexture();
                 layer = 0;
-                for (int i = 0; i < this.mapTextureData.length; ++i) {
-                    mapTextureData[i] = 0x002200;
+
+                for (int i = 0; i < renderer.getTextureData().length; ++i) {
+
+                    renderer.setTextureValue(i, 0x002200);
                 }
                 
                 startX = playerPos.getX();
@@ -302,122 +289,6 @@ public class Mindshaft
     }
 
 
-    @SubscribeEvent //(priority = EventPriority.NORMAL)
-    public void eventHandler(RenderGameOverlayEvent.Post event) {
-    
-        if ((!mindshaftConfig.enabled) || (player == null )) {
-            return;
-        }
-        
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder renderer = tessellator.getBuffer();
-
-        textureManager.bindTexture(location);
-        
-        double fudge = 1 / 256D; // the tx size of the underlying texture
-
-        double offsetU = (player.posX - lastX - 1) * fudge;
-        double offsetV = (player.posZ - lastZ - 1) * fudge;
-
-        double screenX = event.getResolution().getScaledWidth();
-        double screenY = event.getResolution().getScaledHeight();
-        
-        double mapsize = mindshaftConfig.getMapsize() * screenY;
-        double fsmapsize = mindshaftConfig.getFSMapsize() * screenY;
-
-        double offsetX = mindshaftConfig.getOffsetX() * screenX;
-        double offsetY = mindshaftConfig.getOffsetY() * screenY;    
-        
-        double minX;// = 0.0;
-        double minY;// = 0.0;
-        double maxX;// = event.getResolution().getScaledHeight() * 0.20; // 127.0;
-        double maxY;// = maxX; // 127.0;
-
-        int curzoom = zoom.getZoom();
-
-        int cursorsize = mindshaftConfig.cursorsize;
-
-        if (zoom.fullscreen == true) {
-            offsetX = (screenX - fsmapsize) / 2;
-            offsetY = (screenY - fsmapsize) / 2;
-            mapsize = fsmapsize;
-            cursorsize = mindshaftConfig.cursorsizefs;
-        }
-
-        if (mindshaftConfig.offsetfromleft) {
-            minX = offsetX;
-            maxX = offsetX + mapsize;
-        } else {
-            maxX = screenX - offsetX;
-            minX = maxX - mapsize;
-        }
-        
-        if (mindshaftConfig.offsetfromtop) {
-        
-            minY = offsetY;
-            maxY = offsetY + mapsize;
-        } else {
-            maxY = screenY - offsetY;
-            minY = maxY - mapsize;
-        }
-        
-        double minU = zoomlist[curzoom].minU + offsetU; // 0.0;
-        double minV = zoomlist[curzoom].minV + offsetV; // 0.0;
-        double maxU = zoomlist[curzoom].maxU + offsetU; // 1.0;
-        double maxV = zoomlist[curzoom].maxV + offsetV; // 1.0;
-        
-        GlStateManager.disableAlpha();
-        GlStateManager.disableBlend();
-        GlStateManager.resetColor();
-        GlStateManager.disableLighting();
-
-        renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-
-        renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
-        renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
-        renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
-        renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
-        tessellator.draw();
-
-        GlStateManager.enableBlend();
-
-        minU = 0.0;
-        minV = 0.0;
-        maxU = 1.0;
-        maxV = 1.0;
-        
-        GlStateManager.pushMatrix();
-
-        GlStateManager.color(1f,1f,1f, zoom.fullscreen ?  mindshaftConfig.getFSCursorOpacity() : mindshaftConfig.getCursorOpacity());
-
-        textureManager.bindTexture(playericon);
-
-        GlStateManager.enableAlpha();
-
-        GlStateManager.translate(minX + (mapsize / 2 ),
-                                 minY + (mapsize / 2), 0);
-        
-        
-        minX = 0;
-        minY = 0;
-        maxX = cursorsize;
-        maxY = maxX;
-
-        GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate( -( maxX / 2 ), -( maxY / 2), 0);
-        
-        renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
-        renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
-        renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
-        renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
-        tessellator.draw();
-
-        GlStateManager.color(1,1,1,1);
-        GlStateManager.disableAlpha();
-        GlStateManager.popMatrix();
-    }
-
     private void initzooms() {
 
         int zoomcount = mindshaftConfig.zoomlevels.length;
@@ -436,6 +307,11 @@ public class Mindshaft
             logger.info("zoomlist: " + i +  ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:" + zoomlist[i].w + ", minU:" + zoomlist[i].minU + ", minV:" + zoomlist[i].minV + ", maxU:" + zoomlist[i].maxU + ", maxV:" + zoomlist[i].maxV );
         }
         zoom.zoommax = zoomlist.length;
+    }
+
+    @SubscribeEvent //(priority = EventPriority.NORMAL)
+    public void eventHandler(RenderGameOverlayEvent.Post event) {
+        renderer.doRender(event, player);
     }
 
     @SubscribeEvent
@@ -485,16 +361,12 @@ public class Mindshaft
 
     @EventHandler
     public void PostInit(FMLPostInitializationEvent event) {
-        mapTexture = new DynamicTexture(256, 256);
-        mapTextureData = mapTexture.getTextureData();
 
-        textureManager = Minecraft.getMinecraft().getTextureManager();
-        location = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
-        playericon = new ResourceLocation("mindshaft","textures/playericon.png");
+        renderer.initAssets();
 
-        for (int i = 0; i < this.mapTextureData.length; ++i) {
-            mapTextureData[i] = 0x002200;
+        for (int i = 0; i < renderer.getTextureData().length; ++i) {
+            renderer.setTextureValue(i, 0x002200);
         }
-        mapTexture.updateDynamicTexture();
+        renderer.refreshTexture();
     }
 }
