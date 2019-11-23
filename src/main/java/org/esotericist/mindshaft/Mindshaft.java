@@ -1,10 +1,8 @@
 package org.esotericist.mindshaft;
 
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -16,7 +14,6 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -26,8 +23,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-
-import org.lwjgl.input.Keyboard;
 
 import org.apache.logging.log4j.Logger;
 
@@ -43,9 +38,6 @@ public class Mindshaft
 
     public static Logger logger;
     
-    public static KeyBinding[] keyBindings;
-    private boolean[] pressed;
-    
     //public static mindshaftConfig config;
         
     public static EntityPlayer player;
@@ -58,6 +50,8 @@ public class Mindshaft
     private float nextlayer = 0;
 
     private mindshaftRenderer renderer = new mindshaftRenderer();
+
+    private inputHandler input = new inputHandler();
 
     public static zoomstate zoom =  new zoomstate();
     
@@ -77,52 +71,6 @@ public class Mindshaft
         return false;
     }
     
-    private void processKeys() {
-        // binding 0: enable/disable toggle
-        if (keyBindings[0].isPressed() && !pressed[0]) {
-            if (mindshaftConfig.enabled) {
-                mindshaftConfig.setEnabled(false);
-            } else {
-                mindshaftConfig.setEnabled(true);
-            }
-            pressed[0] = true;
-        }
-        if (!keyBindings[0].isPressed() && pressed[0]) {
-            pressed[0] = false;
-        }
-
-        // binding 1: fullscreen toggle
-        // this doesn't have a config entry because it isn't meant to be persistent across sessions.
-        if (keyBindings[1].isPressed() && !pressed[1]) {
-            if (zoom.fullscreen == false) {
-                zoom.fullscreen = true;
-            } else {
-                zoom.fullscreen = false;
-            }
-        }
-        if (!keyBindings[1].isPressed() && pressed[1]) {
-            pressed[1] = false;
-        }
-
-        // binding 2: zoom in
-        if (keyBindings[2].isPressed() && !pressed[2]) {
-            zoom.nextZoom();
-            pressed[2] = true;
-        }
-        if (!keyBindings[2].isPressed() && pressed[2]) {
-            pressed[2] = false;
-        }
-
-        // binding 3: zoom out
-        if (keyBindings[3].isPressed() && !pressed[3]) {
-            zoom.prevZoom();
-            pressed[3] = true;
-        }
-        if (!keyBindings[3].isPressed() && pressed[3]) {
-            pressed[3] = false;
-        }
-        
-    }
     
     private void processLayer(World world, BlockPos playerPos) {
 
@@ -257,7 +205,6 @@ public class Mindshaft
             layer++;
         }
     }
-    
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
@@ -274,7 +221,7 @@ public class Mindshaft
             Math.floor(player.posY), 
             Math.floor(player.posZ));
             
-            processKeys();
+            input.processKeys();
 
             
             if (mindshaftConfig.enabled || zoom.fullscreen) {
@@ -309,18 +256,7 @@ public class Mindshaft
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
-        keyBindings = new KeyBinding[4];
-        pressed = new boolean[4];
-        
-        keyBindings[0] = new KeyBinding("mindshaft.key.toggle.desc", Keyboard.KEY_NUMPAD1, "mindshaft.key.category");
-        keyBindings[1] = new KeyBinding("mindshaft.key.fullscreen.desc", Keyboard.KEY_NUMPAD2, "mindshaft.key.category");
-        keyBindings[2] = new KeyBinding("mindshaft.key.zoomin.desc", Keyboard.KEY_NUMPAD6, "mindshaft.key.category");
-        keyBindings[3] = new KeyBinding("mindshaft.key.zoomout.desc", Keyboard.KEY_NUMPAD3, "mindshaft.key.category");
-        
-        for (int i = 0; i < keyBindings.length; ++i) {
-            ClientRegistry.registerKeyBinding(keyBindings[i]);
-            pressed[i] = false;
-        }
+        input.initBindings();
         
         ConfigManager.sync(MODID, Config.Type.INSTANCE);
         
