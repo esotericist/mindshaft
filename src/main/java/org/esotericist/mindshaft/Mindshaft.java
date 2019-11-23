@@ -277,7 +277,7 @@ public class Mindshaft
             processKeys();
 
             
-            if (mindshaftConfig.enabled) {
+            if (mindshaftConfig.enabled || zoom.fullscreen) {
                 processBlocks(world, playerPos);
             }
         }

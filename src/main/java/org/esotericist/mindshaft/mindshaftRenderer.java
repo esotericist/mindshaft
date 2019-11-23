@@ -69,7 +69,7 @@ public class mindshaftRenderer {
 
     public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player ) {
     
-        if ((!mindshaftConfig.enabled) || (player == null )) {
+        if ((!mindshaftConfig.enabled) && !( Mindshaft.zoom.fullscreen ) || (player == null )) {
             return;
         }
         
