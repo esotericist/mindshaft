@@ -32,7 +32,6 @@ import org.lwjgl.input.Keyboard;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.Math;
-import java.util.Arrays;
 
 @Mod(modid = Mindshaft.MODID, name = Mindshaft.NAME, //version = Mindshaft.VERSION, 
     clientSideOnly = true, dependencies = "after:forge@[14.23.4.2705,)")
@@ -59,8 +58,6 @@ public class Mindshaft
     private float nextlayer = 0;
 
     private mindshaftRenderer renderer = new mindshaftRenderer();
-
-    public static zoomspec[] zoomlist; 
 
     public static zoomstate zoom =  new zoomstate();
     
@@ -130,12 +127,12 @@ public class Mindshaft
     private void processLayer(World world, BlockPos playerPos) {
 
         int y = layer - 15;
-        int curzoom = zoom.getZoom();
-        int overdraw = zoomlist[curzoom].overdraw;
-        int minX = zoomlist[curzoom].x - overdraw;
-        int minZ = zoomlist[curzoom].z - overdraw;
-        int maxX = zoomlist[curzoom].w / 2 + overdraw;
-        int maxZ = zoomlist[curzoom].h / 2 + overdraw;
+        zoomspec curzoom = zoom.getZoomSpec();
+        int overdraw = curzoom.overdraw;
+        int minX = curzoom.x - overdraw;
+        int minZ = curzoom.z - overdraw;
+        int maxX = curzoom.w / 2 + overdraw;
+        int maxZ = curzoom.h / 2 + overdraw;
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -220,8 +217,7 @@ public class Mindshaft
                         blue = blue + (int) (16-dist);
                     }
                 }
-                
-            
+
                 int offset = (adjX+127)+((adjZ+127)*256);
             
                 oldcolor = renderer.getTextureData(offset);
@@ -237,8 +233,7 @@ public class Mindshaft
     
     private void processBlocks(World world, BlockPos playerPos) {
     
-        int curzoom = zoom.getZoom();
-        nextlayer = nextlayer + zoomlist[curzoom].layerrate;
+        nextlayer = nextlayer + zoom.getZoomSpec().layerrate;
         
         while (nextlayer >= 1.0F) {
         
@@ -289,26 +284,6 @@ public class Mindshaft
     }
 
 
-    private void initzooms() {
-
-        int zoomcount = mindshaftConfig.zoomlevels.length;
-        zoomlist = new zoomspec[ zoomcount ];
-        Arrays.setAll(zoomlist, (i) -> new zoomspec());
-
-        for( int i = 0; i < zoomcount; ++i ) {
-            int zoomsize = mindshaftConfig.zoomlevels[i];
-            int layerrate = mindshaftConfig.layerrate / zoomsize;
-            if( layerrate <= 0 ) {
-                layerrate = 1;
-            }
-            zoomlist[i].setZoomSpec( zoomsize, layerrate, 30);
-        }
-        for( int i = 0; i < zoomcount; ++i ) {
-            logger.info("zoomlist: " + i +  ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:" + zoomlist[i].w + ", minU:" + zoomlist[i].minU + ", minV:" + zoomlist[i].minV + ", maxU:" + zoomlist[i].maxU + ", maxV:" + zoomlist[i].maxV );
-        }
-        zoom.zoommax = zoomlist.length;
-    }
-
     @SubscribeEvent //(priority = EventPriority.NORMAL)
     public void eventHandler(RenderGameOverlayEvent.Post event) {
         renderer.doRender(event, player);
@@ -319,14 +294,7 @@ public class Mindshaft
     
         if (event.getModID().equals(Mindshaft.MODID)) {
             ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
-            initzooms();
-            if( mindshaftConfig.zoom > zoomlist.length ) {
-                mindshaftConfig.setZoom(zoomlist.length - 1, false );
-            }
-            if( mindshaftConfig.zoomfs > zoomlist.length ) {
-                mindshaftConfig.setZoom(zoomlist.length - 1, true );
-            }
-            zoom.zoommax = zoomlist.length;
+            zoom.initzooms();
         }
     }
 
@@ -356,17 +324,12 @@ public class Mindshaft
         
         ConfigManager.sync(MODID, Config.Type.INSTANCE);
         
-        initzooms();
+        zoom.initzooms();
     }
 
     @EventHandler
     public void PostInit(FMLPostInitializationEvent event) {
 
         renderer.initAssets();
-
-        for (int i = 0; i < renderer.getTextureData().length; ++i) {
-            renderer.setTextureValue(i, 0x002200);
-        }
-        renderer.refreshTexture();
     }
 }

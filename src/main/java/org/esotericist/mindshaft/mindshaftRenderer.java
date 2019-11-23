@@ -53,7 +53,7 @@ public class mindshaftRenderer {
         lastZ = z;
     }
 
-    public DynamicTexture initAssets() {
+    public void initAssets() {
         mapTexture = new DynamicTexture(256, 256);
         mapTextureData = mapTexture.getTextureData();
         textureManager = Minecraft.getMinecraft().getTextureManager();
@@ -61,7 +61,10 @@ public class mindshaftRenderer {
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft","textures/playericon.png");
 
-        return mapTexture;
+        for (int i = 0; i < getTextureData().length; ++i) {
+            setTextureValue(i, 0x002200);
+        }
+        refreshTexture();
     }
 
     public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player ) {
@@ -94,8 +97,6 @@ public class mindshaftRenderer {
         double maxX;// = event.getResolution().getScaledHeight() * 0.20; // 127.0;
         double maxY;// = maxX; // 127.0;
 
-        int curzoom = Mindshaft.zoom.getZoom();
-
         int cursorsize = mindshaftConfig.cursorsize;
 
         if ( Mindshaft.zoom.fullscreen == true) {
@@ -121,11 +122,13 @@ public class mindshaftRenderer {
             maxY = screenY - offsetY;
             minY = maxY - mapsize;
         }
-        
-        double minU = Mindshaft.zoomlist[curzoom].minU + offsetU; // 0.0;
-        double minV = Mindshaft.zoomlist[curzoom].minV + offsetV; // 0.0;
-        double maxU = Mindshaft.zoomlist[curzoom].maxU + offsetU; // 1.0;
-        double maxV = Mindshaft.zoomlist[curzoom].maxV + offsetV; // 1.0;
+
+        zoomspec currentzoom = Mindshaft.zoom.getZoomSpec();
+
+        double minU = currentzoom.minU + offsetU; // 0.0;
+        double minV = currentzoom.minV + offsetV; // 0.0;
+        double maxU = currentzoom.maxU + offsetU; // 1.0;
+        double maxV = currentzoom.maxV + offsetV; // 1.0;
         
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();

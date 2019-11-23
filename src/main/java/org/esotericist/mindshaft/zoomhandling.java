@@ -1,5 +1,7 @@
 package org.esotericist.mindshaft;
 
+import java.util.Arrays;
+
 class zoomspec {
     public int x;
     public int z;
@@ -11,7 +13,7 @@ class zoomspec {
     public double maxV;
     public float layerrate;
     public int overdraw;
-    
+
     public void setZoomSpec(int x, int z, int w, int h, 
         double minU, double minV, double maxU, double maxV, float layerrate, int overdraw) {
         
@@ -42,15 +44,47 @@ class zoomspec {
 
 class zoomstate  {
     public boolean fullscreen = false;
-    public int zoommax = 0;
+    private int zoommax = 0;
+
+    private static zoomspec[] zoomlist;
+
+    public zoomspec getZoomSpec() {
+        int currentzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+
+        return zoomlist[currentzoom];
+    }
+
+    public void initzooms() {
+
+        int zoomcount = mindshaftConfig.zoomlevels.length;
+        zoomlist = new zoomspec[ zoomcount ];
+        Arrays.setAll(zoomlist, (i) -> new zoomspec());
+
+        for( int i = 0; i < zoomcount; ++i ) {
+            int zoomsize = mindshaftConfig.zoomlevels[i];
+            int layerrate = mindshaftConfig.layerrate / zoomsize;
+            if( layerrate <= 0 ) {
+                layerrate = 1;
+            }
+            zoomlist[i].setZoomSpec( zoomsize, layerrate, 30);
+        }
+        for( int i = 0; i < zoomcount; ++i ) {
+            Mindshaft.logger.info("zoomlist: " + i +  ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:" + zoomlist[i].w + ", minU:" + zoomlist[i].minU + ", minV:" + zoomlist[i].minV + ", maxU:" + zoomlist[i].maxU + ", maxV:" + zoomlist[i].maxV );
+        }
+
+        if( mindshaftConfig.zoom > zoomlist.length ) {
+            mindshaftConfig.setZoom(zoomlist.length - 1, false );
+        }
+        if( mindshaftConfig.zoomfs > zoomlist.length ) {
+            mindshaftConfig.setZoom(zoomlist.length - 1, true );
+        }
+        zoommax = zoomlist.length;
+
+    }
 
     public int getZoom() {
-        int curzoom;
-        if( fullscreen ) {
-            curzoom = mindshaftConfig.zoomfs;
-        } else {
-            curzoom = mindshaftConfig.zoom;
-        }
+        int curzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+
         if( curzoom >= zoommax ) {
             curzoom = zoommax - 1;
         }
@@ -59,6 +93,7 @@ class zoomstate  {
 
     public void nextZoom() {
         int newzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+
         newzoom++;
         if( newzoom >= zoommax ) {
             newzoom = 0;
@@ -68,6 +103,7 @@ class zoomstate  {
 
     public void prevZoom() {
         int newzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
+
         newzoom--;
         if( newzoom < 0 ) {
             newzoom = zoommax - 1;
