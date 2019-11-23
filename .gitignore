@@ -24,3 +24,4 @@ deps
 *~
 .DS_store
 *.code-workspace
+.vscode/*
