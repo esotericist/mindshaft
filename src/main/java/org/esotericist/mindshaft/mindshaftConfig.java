@@ -109,7 +109,7 @@ public class mindshaftConfig  {
     }
 
     public static float  getFSCursorOpacity() {
-        return (float) cursoropacity / (float) 100.0;
+        return (float) cursoropacityfs / (float) 100.0;
     }
 
     private static void refresh() {
