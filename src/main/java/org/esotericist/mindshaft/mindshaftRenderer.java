@@ -145,10 +145,10 @@ public class mindshaftRenderer {
 
         GlStateManager.enableBlend();
 
-        minU = 0.0;
-        minV = 0.0;
-        maxU = 1.0;
-        maxV = 1.0;
+        double cminU = 0.0;
+        double cminV = 0.0;
+        double cmaxU = 1.0;
+        double cmaxV = 1.0;
         
         GlStateManager.pushMatrix();
 
@@ -161,19 +161,21 @@ public class mindshaftRenderer {
         GlStateManager.translate(minX + (mapsize / 2 ),
                                  minY + (mapsize / 2), 0);
         
-        minX = 0;
-        minY = 0;
-        maxX = cursorsize;
-        maxY = maxX;
+        double cminX = 0;
+        double cminY = 0;
+        double cmaxX = cursorsize;
+        double cmaxY = cursorsize;
+
+        double centeroffset = cursorsize / 16.0;
 
         GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate( -( maxX / 2 ), -( maxY / 2), 0);
+        GlStateManager.translate( -( (cmaxX - centeroffset) / 2 ), -( (cmaxY - centeroffset) / 2), 0);
         
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
-        renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
-        renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
-        renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
+        renderer.pos(cminX, cmaxY, 0).tex(cminU, cmaxV).endVertex();
+        renderer.pos(cmaxX, cmaxY, 0).tex(cmaxU, cmaxV).endVertex();
+        renderer.pos(cmaxX, cminY, 0).tex(cmaxU, cminV).endVertex();
+        renderer.pos(cminX, cminY, 0).tex(cminU, cminV).endVertex();
         tessellator.draw();
 
         GlStateManager.color(1,1,1,1);
