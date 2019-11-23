@@ -341,7 +341,7 @@ public class Mindshaft
             offsetX = (screenX - fsmapsize) / 2;
             offsetY = (screenY - fsmapsize) / 2;
             mapsize = fsmapsize;
-            cursorsize = mindshaftConfig.fscursorsize;
+            cursorsize = mindshaftConfig.cursorsizefs;
         }
 
         if (mindshaftConfig.offsetfromleft) {
@@ -388,7 +388,7 @@ public class Mindshaft
         
         GlStateManager.pushMatrix();
 
-        GlStateManager.color(1f,1f,1f, mindshaftConfig.getCursorOpacity());
+        GlStateManager.color(1f,1f,1f, zoom.fullscreen ?  mindshaftConfig.getFSCursorOpacity() : mindshaftConfig.getCursorOpacity());
 
         textureManager.bindTexture(playericon);
 
