@@ -424,7 +424,10 @@ public class Mindshaft
 
         for( int i = 0; i < zoomcount; ++i ) {
             int zoomsize = mindshaftConfig.zoomlevels[i];
-            int layerrate = 512 / zoomsize;
+            int layerrate = mindshaftConfig.layerrate / zoomsize;
+            if( layerrate <= 0 ) {
+                layerrate = 1;
+            }
             zoomlist[i].setZoomSpec( zoomsize, layerrate, 30);
         }
         for( int i = 0; i < zoomcount; ++i ) {

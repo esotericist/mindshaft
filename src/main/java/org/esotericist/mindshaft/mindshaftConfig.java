@@ -15,7 +15,7 @@ public class mindshaftConfig  {
     @Config.Comment("Whether Mindshaft is currently enabled.")
     public static boolean enabled = false;
 
-    @Config.Comment({"List of zoom levels.", ""})
+    @Config.Comment({"List of zoom levels available for both minimap and fullscreen.", "Wider zoom levels have substantially more performance impact."})
     @RangeInt(min = 16, max=192)
     public static int[] zoomlevels = { 192, 128, 64, 32 };
 
@@ -26,6 +26,10 @@ public class mindshaftConfig  {
     @Config.Comment({"Current fullscreen zoom level.","Default zoom levels:","0: 192 blocks across.","1: 128 blocks across.","2: 64 blocks across.","3: 32 blocks across."})
     @RangeInt(min=0, max=255)
     public static int zoomfs = 3;
+
+    @Config.Comment({"Base rate for layer processing per tick, divided by current zoom level.", "ex: 384 (default rate) / 192 (default largest zoom level) = 2 layers per tick." , "Higher values result in greater rendering performance impact but faster update responsiveness.", "If you experience stuttering, lower this value or use smaller zoom levels."})
+    @RangeInt(min=128, max=1024)
+    public static int layerrate = 384;
 
     @Config.Comment({"Minimap size.","Size of minimap as expressed in percentage of the vertical size of the screen.",
                     "Since the minimap is a square, it'll be the same width as height."})
