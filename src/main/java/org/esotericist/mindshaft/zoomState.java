@@ -2,53 +2,13 @@ package org.esotericist.mindshaft;
 
 import java.util.Arrays;
 
-class zoomspec {
-    public int x;
-    public int z;
-    public int w;
-    public int h;
-    public double minU;
-    public double minV;
-    public double maxU;
-    public double maxV;
-    public float layerrate;
-    public int overdraw;
-
-    public void setZoomSpec(int x, int z, int w, int h, 
-        double minU, double minV, double maxU, double maxV, float layerrate, int overdraw) {
-        
-        this.x = x;
-        this.z = z;
-        this.w = w;
-        this.h = h;
-        this.minU = minU;
-        this.minV = minV;
-        this.maxU = maxU;
-        this.maxV = maxV;
-        this.layerrate = layerrate;
-        this.overdraw = overdraw;
-    }
-
-    public void setZoomSpec( int size, float layerrate, int overdraw ) {
-        int w = size;
-        int h = size;
-        int x = -(w / 2) + 1;
-        int z = x;
-        double minU = (128 + x) * 1 / 256D;
-        double minV = minU;
-        double maxU = 1D - minU;
-        double maxV = maxU;
-        setZoomSpec(x, z, w, h, minU, minV, maxU, maxV, layerrate, overdraw);
-    }
-}
-
-class zoomstate  {
+class zoomState  {
     public boolean fullscreen = false;
     private int zoommax = 0;
 
-    private static zoomspec[] zoomlist;
+    private static zoomSpec[] zoomlist;
 
-    public zoomspec getZoomSpec() {
+    public zoomSpec getZoomSpec() {
         int currentzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
 
         return zoomlist[currentzoom];
@@ -57,8 +17,8 @@ class zoomstate  {
     public void initzooms() {
 
         int zoomcount = mindshaftConfig.zoomlevels.length;
-        zoomlist = new zoomspec[ zoomcount ];
-        Arrays.setAll(zoomlist, (i) -> new zoomspec());
+        zoomlist = new zoomSpec[ zoomcount ];
+        Arrays.setAll(zoomlist, (i) -> new zoomSpec());
 
         for( int i = 0; i < zoomcount; ++i ) {
             int zoomsize = mindshaftConfig.zoomlevels[i];

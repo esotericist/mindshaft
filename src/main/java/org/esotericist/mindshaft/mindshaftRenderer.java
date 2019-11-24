@@ -123,7 +123,7 @@ public class mindshaftRenderer {
             minY = maxY - mapsize;
         }
 
-        zoomspec currentzoom = Mindshaft.zoom.getZoomSpec();
+        zoomSpec currentzoom = Mindshaft.zoom.getZoomSpec();
 
         double minU = currentzoom.minU + offsetU; // 0.0;
         double minV = currentzoom.minV + offsetV; // 0.0;

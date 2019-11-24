@@ -53,7 +53,7 @@ public class Mindshaft
 
     private inputHandler input = new inputHandler();
 
-    public static zoomstate zoom =  new zoomstate();
+    public static zoomState zoom =  new zoomState();
     
     private int clamp (int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -75,7 +75,7 @@ public class Mindshaft
     private void processLayer(World world, BlockPos playerPos) {
 
         int y = layer - 15;
-        zoomspec curzoom = zoom.getZoomSpec();
+        zoomSpec curzoom = zoom.getZoomSpec();
         int overdraw = curzoom.overdraw;
         int minX = curzoom.x - overdraw;
         int minZ = curzoom.z - overdraw;
