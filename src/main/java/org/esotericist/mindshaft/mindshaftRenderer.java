@@ -28,6 +28,14 @@ class mindshaftRenderer {
     private int lastX = 0;
     private int lastZ = 0;
 
+    // 256 x 256 for the map texture
+    // it's possible to change this but there's not a lot of benefit
+    private static final int texturesize = 256;
+
+    // the size of a single texel in the underlying texture
+    // primarily used for sub-texel offsets while the player is moving
+    private static final double texelsize = 1.0 / texturesize;
+
     public DynamicTexture getTexture() {
         return mapTexture;
     }
@@ -54,7 +62,7 @@ class mindshaftRenderer {
     }
 
     public void initAssets() {
-        mapTexture = new DynamicTexture(256, 256);
+        mapTexture = new DynamicTexture(texturesize, texturesize);
         mapTextureData = mapTexture.getTextureData();
         textureManager = Minecraft.getMinecraft().getTextureManager();
 
@@ -78,10 +86,8 @@ class mindshaftRenderer {
 
         textureManager.bindTexture(mapresource);
         
-        double fudge = 1 / 256D; // the tx size of the underlying texture
-
-        double offsetU = (player.posX - lastX - 1) * fudge;
-        double offsetV = (player.posZ - lastZ - 1) * fudge;
+        double offsetU = (player.posX - lastX - 1) * texelsize;
+        double offsetV = (player.posZ - lastZ - 1) * texelsize;
 
         double screenX = event.getResolution().getScaledWidth();
         double screenY = event.getResolution().getScaledHeight();
@@ -92,10 +98,10 @@ class mindshaftRenderer {
         double offsetX = mindshaftConfig.getOffsetX() * screenX;
         double offsetY = mindshaftConfig.getOffsetY() * screenY;    
         
-        double minX;// = 0.0;
-        double minY;// = 0.0;
-        double maxX;// = event.getResolution().getScaledHeight() * 0.20; // 127.0;
-        double maxY;// = maxX; // 127.0;
+        double minX;
+        double minY;
+        double maxX;
+        double maxY;
 
         int cursorsize = mindshaftConfig.cursorsize;
 
