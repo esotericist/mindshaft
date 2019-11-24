@@ -17,7 +17,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.lwjgl.opengl.GL11;
 
 
-public class mindshaftRenderer {
+class mindshaftRenderer {
 
     private TextureManager textureManager;
     private DynamicTexture mapTexture;
