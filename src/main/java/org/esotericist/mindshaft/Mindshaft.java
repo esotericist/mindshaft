@@ -38,8 +38,6 @@ public class Mindshaft
 
     public static Logger logger;
     
-    //public static mindshaftConfig config;
-        
     public static EntityPlayer player;
 
     private int layer = 0;
@@ -107,7 +105,6 @@ public class Mindshaft
                 if ((adjX < minX) || (adjX > maxX) || (adjZ < minZ) || (adjZ > maxZ)) {
                     continue;
                 }
-
                 
                 BlockPos pos = new BlockPos(playerPos.getX()+x,player.posY - (17 / 32D)+y,playerPos.getZ()+z);
                 IBlockState state = world.getBlockState(pos);
