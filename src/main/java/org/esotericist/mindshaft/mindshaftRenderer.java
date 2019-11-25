@@ -47,12 +47,20 @@ class mindshaftRenderer {
         mapTextureData[pos] = val;
     }
 
+    public void setTextureValue(int x, int y, int val) {
+        setTextureValue(x + (y * 256), val);
+    }
+
     public int[] getTextureData() {
         return mapTextureData;
     }
 
-    public int getTextureData(int pos) {
+    public int getTextureValue(int pos) {
         return mapTextureData[pos];
+    }
+
+    public int getTextureValue(int x, int y) {
+        return getTextureValue(x + (y * 256));
     }
 
     public void updatePos(int x, int z) {
@@ -137,8 +145,8 @@ class mindshaftRenderer {
         double maxU = currentzoom.maxU + offsetU; // 1.0;
         double maxV = currentzoom.maxV + offsetV; // 1.0;
 
-        Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~"+maxV);
- 
+        Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
+
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.resetColor();

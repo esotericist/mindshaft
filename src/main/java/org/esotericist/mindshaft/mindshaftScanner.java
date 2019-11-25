@@ -15,8 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Iterator; 
-
+import java.util.Arrays;
+import java.util.Iterator;
 
 class mindshaftScanner {
 
@@ -83,15 +83,18 @@ class mindshaftScanner {
     }
 
     static class layerSegment {
-        int[][] color = new int[16][16];
+        private int[] color = new int[256];
 
         public layerSegment(Integer v) {
-            //Arrays.fill(color, v);
-            for(int i = 0; i < 16; i++ ) {
-                for(int j = 0; j < 16; j++ ) {
-                    color[i][j] = v;
-                }
-            }
+            Arrays.fill(color, v);
+        }
+
+        public void setColor(int x, int y, int c) {
+            color[x + (y * 16)] = c;
+        }
+
+        public int getColor(int x, int y) {
+            return color[x + (y * 16)];
         }
     }
 
@@ -108,10 +111,11 @@ class mindshaftScanner {
         boolean stale = false;
         boolean expired = false;
         LinkedHashMap<Integer, layerSegment> layers = new LinkedHashMap<Integer, layerSegment>(16, 0.75f, true);
+
         public chunkData() {
-            for(int i = 0; i < 16; i++ ) {
-                for(int j = 0; j < 256; j++ ) {
-                    for(int k = 0; k < 16; k++ ) {
+            for (int i = 0; i < 16; i++) {
+                for (int j = 0; j < 256; j++) {
+                    for (int k = 0; k < 16; k++) {
                         blockData[i][j][k] = new block();
                     }
                 }
@@ -123,15 +127,20 @@ class mindshaftScanner {
         protected boolean removeEldestEntry(Map.Entry<chunkID, chunkData> eldest) {
             chunkData thisChunk = eldest.getValue();
             if (thisChunk.expired || (thisChunk.stale && thisChunk.expiration <= mindshaftScanner.now)) {
-                // Mindshaft.logger.info(now + ": removed chunk: " + eldest.getKey().x + ", " + eldest.getKey().z);
+                // Mindshaft.logger.info(now + ": removed chunk: " + eldest.getKey().x + ", " +
+                // eldest.getKey().z);
                 return true;
             } else {
                 return false;
             }
         }
+
+        public chunkCache(Integer i) {
+            super();
+        }
     }
 
-    static chunkCache chunksKnown = new chunkCache();
+    static chunkCache chunksKnown = new chunkCache(32);
     static LinkedList<chunkID> requestedChunks = new LinkedList<chunkID>();
 
     private int clamp(int value, int min, int max) {
@@ -148,8 +157,8 @@ class mindshaftScanner {
         return false;
     }
 
-    private void requestChunk(chunkID chunk ) {
-        if ( ! requestedChunks.contains(chunk) ) {
+    private void requestChunk(chunkID chunk) {
+        if (!requestedChunks.contains(chunk)) {
             // Mindshaft.logger.info(now+ ": requested chunk: " + chunk.x + ", " + chunk.z);
             requestedChunks.add(chunk);
         }
@@ -159,17 +168,23 @@ class mindshaftScanner {
         chunkData thischunk = chunksKnown.get(chunk);
         if (thischunk != null) {
             if (!thischunk.stale && thischunk.expiration <= now) {
-                // Mindshaft.logger.info(now + ": stale chunk: " + chunk.x + ", " + chunk.z + ", stale at:" + thischunk.expiration );
+                // Mindshaft.logger.info(now + ": stale chunk: " + chunk.x + ", " + chunk.z + ",
+                // stale at:" + thischunk.expiration );
                 thischunk.stale = true;
                 thischunk.expiration = now + forcedExpiry + random.nextInt(forcedExpiryFudge);
                 requestChunk(chunk);
-            } 
-            // Mindshaft.logger.info(now + ": fetched chunk: " + chunk.x + ", " + chunk.z + ", stale at:" + thischunk.expiration );
+            }
+            // Mindshaft.logger.info(now + ": fetched chunk: " + chunk.x + ", " + chunk.z +
+            // ", stale at:" + thischunk.expiration );
             return chunksKnown.get(chunk);
         } else {
             requestChunk(chunk);
         }
         return null;
+    }
+
+    void addLayerSegment(chunkID chunk ) {
+
     }
 
     layerSegment getLayerSegment(chunkID chunk, Integer y) {
@@ -185,7 +200,8 @@ class mindshaftScanner {
     void scanChunk(World world, EntityPlayer player, chunkID chunk) {
         chunkData newChunk = new chunkData();
         newChunk.expiration = now + expiry + random.nextInt(expiryFudge);
-        // Mindshaft.logger.info(now + ": new chunk: " + chunk.x + ", " + chunk.z + ", stale at: " + newChunk.expiration);
+        // Mindshaft.logger.info(now + ": new chunk: " + chunk.x + ", " + chunk.z + ",
+        // stale at: " + newChunk.expiration);
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 256; y++) {
                 for (int z = 0; z < 16; z++) {
@@ -222,14 +238,14 @@ class mindshaftScanner {
         int chunkStartZ = pcZ - chunkRadius;
         int chunkEndX = pcX + chunkRadius;
         int chunkEndZ = pcZ + chunkRadius;
-        pcX-= 8;
-        pcZ-= 8;
+        pcX -= 8;
+        pcZ -= 8;
 
         for (int cX = 0; cX < 16; cX++) {
             for (int cZ = 0; cZ < 16; cZ++) {
                 chunkID thisChunk = new chunkID(currentDim, cX + chunkStartX, cZ + chunkStartZ);
-                if( cX + pcX < chunkStartX || cX + pcX > chunkEndX || cZ + pcZ < chunkStartZ || cZ + pcZ > chunkEndZ ) {
-                    if( ! chunksKnown.containsKey(thisChunk)) {
+                if (cX + pcX < chunkStartX || cX + pcX > chunkEndX || cZ + pcZ < chunkStartZ || cZ + pcZ > chunkEndZ) {
+                    if (!chunksKnown.containsKey(thisChunk)) {
                         requestChunk(thisChunk);
                     }
                     continue;
@@ -237,9 +253,12 @@ class mindshaftScanner {
                 layerSegment thisSegment = getLayerSegment(thisChunk, (int) (player.posY - fudgeY));
                 for (int x = 0; x < 16; x++) {
                     for (int z = 0; z < 16; z++) {
-                        int color = thisSegment.color[x][z];
-                        int offset = (cX * 16 + x) + (( cZ * 16 + z) * 256);
-                        renderer.setTextureValue(offset, color);
+                        int tX = cX * 16 + x;
+                        int tZ = cZ * 16 + z;
+
+                        int color = thisSegment.getColor(x, z);
+
+                        renderer.setTextureValue(tX, tZ, color);
                     }
                 }
             }
@@ -250,31 +269,19 @@ class mindshaftScanner {
     public void processChunks(World world, EntityPlayer player, zoomState zoom) {
         now = world.getTotalWorldTime();
         currentDim = world.provider.getDimension();
-        /*
-        chunkRadius = (int) Math.ceil(zoom.getZoomSpec().h / 16.0);
-        if (chunkRadius > 8 ) {
-            chunkRadius = 8;
-        }
-        if(chunkRadius < 1 ) {
-            chunkRadius = 1;
-        }
-        */
+         chunkRadius = (int) Math.ceil(zoom.getZoomSpec().h / 16.0); if (chunkRadius > 8 ) { chunkRadius = 8; } if(chunkRadius < 1 ) { chunkRadius = 1; }
         if (!requestedChunks.isEmpty()) {
             int cacheCount = 0;
             Iterator<chunkID> itr = requestedChunks.iterator();
-            while( itr.hasNext() && cacheCount++ <= chunkCacheMax ) {
+            while (itr.hasNext() && cacheCount++ <= chunkCacheMax) {
                 scanChunk(world, player, itr.next());
                 itr.remove();
             }
             // Mindshaft.logger.info("requested count: " + requestedChunks.size());
             /*
-            for (chunkID thisChunk : requestedChunks) {
-                if (cacheCount++ > chunkCacheMax) {
-                    break;
-                }
-                scanChunk(world, player, thisChunk);
-                ;
-            }*/
+             * for (chunkID thisChunk : requestedChunks) { if (cacheCount++ > chunkCacheMax)
+             * { break; } scanChunk(world, player, thisChunk); ; }
+             */
         }
     }
 
@@ -372,16 +379,17 @@ class mindshaftScanner {
                     }
                 }
 
-                int offset = (adjX + 127) + ((adjZ + 127) * 256);
+                int tX = adjX + 127;
+                int tZ = adjZ + 127;
 
-                oldcolor = renderer.getTextureData(offset);
+                oldcolor = renderer.getTextureValue(tX, tZ);
                 oldblue = oldcolor & 0xFF;
                 oldgreen = (oldcolor >> 8) & 0xFF;
                 oldred = (oldcolor >> 16) & 0xFF;
 
                 color = clamp(red + oldred, 0, 255) << 16 | clamp(green + oldgreen, 0, 255) << 8
                         | clamp(blue + oldblue, 0, 255);
-                renderer.setTextureValue(offset, color);
+                renderer.setTextureValue(tX, tZ, color);
             }
         }
     }
