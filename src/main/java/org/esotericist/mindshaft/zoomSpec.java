@@ -12,9 +12,9 @@ class zoomSpec {
     public float layerrate;
     public int overdraw;
 
-    public void setZoomSpec(int x, int z, int w, int h, 
-        double minU, double minV, double maxU, double maxV, float layerrate, int overdraw) {
-        
+    public void setZoomSpec(int x, int z, int w, int h, double minU, double minV, double maxU, double maxV,
+            float layerrate, int overdraw) {
+
         this.x = x;
         this.z = z;
         this.w = w;
@@ -27,7 +27,7 @@ class zoomSpec {
         this.overdraw = overdraw;
     }
 
-    public void setZoomSpec( int size, float layerrate, int overdraw ) {
+    public void setZoomSpec(int size, float layerrate, int overdraw) {
         int w = size;
         int h = size;
         int x = -(w / 2) + 1;

@@ -16,7 +16,6 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 import org.lwjgl.opengl.GL11;
 
-
 class mindshaftRenderer {
 
     private TextureManager textureManager;
@@ -56,7 +55,7 @@ class mindshaftRenderer {
         return mapTextureData[pos];
     }
 
-    public void updatePos( int x, int z) {
+    public void updatePos(int x, int z) {
         lastX = x;
         lastZ = z;
     }
@@ -67,7 +66,7 @@ class mindshaftRenderer {
         textureManager = Minecraft.getMinecraft().getTextureManager();
 
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
-        playericon = new ResourceLocation("mindshaft","textures/playericon.png");
+        playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
         for (int i = 0; i < getTextureData().length; ++i) {
             setTextureValue(i, 0x002200);
@@ -75,29 +74,29 @@ class mindshaftRenderer {
         refreshTexture();
     }
 
-    public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player ) {
-    
-        if ((!mindshaftConfig.enabled) && !( Mindshaft.zoom.fullscreen ) || (player == null )) {
+    public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player) {
+
+        if ((!mindshaftConfig.enabled) && !(Mindshaft.zoom.fullscreen) || (player == null)) {
             return;
         }
-        
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder renderer = tessellator.getBuffer();
 
         textureManager.bindTexture(mapresource);
-        
+
         double offsetU = (player.posX - lastX - 1) * texelsize;
         double offsetV = (player.posZ - lastZ - 1) * texelsize;
 
         double screenX = event.getResolution().getScaledWidth();
         double screenY = event.getResolution().getScaledHeight();
-        
+
         double mapsize = mindshaftConfig.getMapsize() * screenY;
         double fsmapsize = mindshaftConfig.getFSMapsize() * screenY;
 
         double offsetX = mindshaftConfig.getOffsetX() * screenX;
-        double offsetY = mindshaftConfig.getOffsetY() * screenY;    
-        
+        double offsetY = mindshaftConfig.getOffsetY() * screenY;
+
         double minX;
         double minY;
         double maxX;
@@ -105,7 +104,7 @@ class mindshaftRenderer {
 
         int cursorsize = mindshaftConfig.cursorsize;
 
-        if ( Mindshaft.zoom.fullscreen == true) {
+        if (Mindshaft.zoom.fullscreen == true) {
             offsetX = (screenX - fsmapsize) / 2;
             offsetY = (screenY - fsmapsize) / 2;
             mapsize = fsmapsize;
@@ -119,9 +118,9 @@ class mindshaftRenderer {
             maxX = screenX - offsetX;
             minX = maxX - mapsize;
         }
-        
+
         if (mindshaftConfig.offsetfromtop) {
-        
+
             minY = offsetY;
             maxY = offsetY + mapsize;
         } else {
@@ -135,7 +134,7 @@ class mindshaftRenderer {
         double minV = currentzoom.minV + offsetV; // 0.0;
         double maxU = currentzoom.maxU + offsetU; // 1.0;
         double maxV = currentzoom.maxV + offsetV; // 1.0;
-        
+
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.resetColor();
@@ -155,18 +154,17 @@ class mindshaftRenderer {
         double cminV = 0.0;
         double cmaxU = 1.0;
         double cmaxV = 1.0;
-        
+
         GlStateManager.pushMatrix();
 
-        GlStateManager.color(1f,1f,1f, mindshaftConfig.getCursorOpacity(Mindshaft.zoom.fullscreen));
+        GlStateManager.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(Mindshaft.zoom.fullscreen));
 
         textureManager.bindTexture(playericon);
 
         GlStateManager.enableAlpha();
 
-        GlStateManager.translate(minX + (mapsize / 2 ),
-                                 minY + (mapsize / 2), 0);
-        
+        GlStateManager.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0);
+
         double cminX = 0;
         double cminY = 0;
         double cmaxX = cursorsize;
@@ -175,8 +173,8 @@ class mindshaftRenderer {
         double centeroffset = cursorsize / 16.0;
 
         GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate( -( (cmaxX - centeroffset) / 2 ), -( (cmaxY - centeroffset) / 2), 0);
-        
+        GlStateManager.translate(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
+
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(cminX, cmaxY, 0).tex(cminU, cmaxV).endVertex();
         renderer.pos(cmaxX, cmaxY, 0).tex(cmaxU, cmaxV).endVertex();
@@ -184,7 +182,7 @@ class mindshaftRenderer {
         renderer.pos(cminX, cminY, 0).tex(cminU, cminV).endVertex();
         tessellator.draw();
 
-        GlStateManager.color(1,1,1,1);
+        GlStateManager.color(1, 1, 1, 1);
         GlStateManager.disableAlpha();
         GlStateManager.popMatrix();
     }
