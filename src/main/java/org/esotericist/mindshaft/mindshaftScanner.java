@@ -10,8 +10,17 @@ import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 import java.lang.Math;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Iterator; 
+
 
 class mindshaftScanner {
+
+    Random random = new Random();
 
     private int layer = 0;
 
@@ -19,6 +28,111 @@ class mindshaftScanner {
     private int startZ = 0;
 
     private float nextlayer = 0;
+
+    private static long now = 0;
+    private static int chunkRadius = 8;
+    private static int currentDim = 0;
+
+    // fudge for player's current Y level
+    private static final double fudgeY = 17 / 32D;
+
+    // how many chunks can be cached per tick
+    private static final int chunkCacheMax = 3;
+
+    // minimum time in ticks before a chunk is considered stale
+    private static final int expiry = 20000;
+
+    // random addition in ticks to expiry
+    private static final int expiryFudge = 100;
+
+    // minimum time in ticks before a chunk is forcibly removed
+    // actual forced expiration time is forcedExpiry + expiry
+    private static final int forcedExpiry = 160000;
+
+    // random addition in ticks to forcedExpiry
+    private static final int forcedExpiryFudge = 2000;
+
+    // default color for empty layers. dark green.
+    private static final int defaultColor = 0x002200;
+
+    private layerSegment emptyLayer = new layerSegment(defaultColor);
+
+    static class chunkID {
+        int dimension, x, z;
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dimension, x, z);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof chunkID))
+                return false;
+            chunkID other = (chunkID) obj;
+            return dimension == other.dimension && x == other.x && z == other.z;
+        }
+
+        public chunkID(int dim, int newX, int newZ) {
+            dimension = dim;
+            x = newX;
+            z = newZ;
+        }
+    }
+
+    static class layerSegment {
+        int[][] color = new int[16][16];
+
+        public layerSegment(Integer v) {
+            //Arrays.fill(color, v);
+            for(int i = 0; i < 16; i++ ) {
+                for(int j = 0; j < 16; j++ ) {
+                    color[i][j] = v;
+                }
+            }
+        }
+    }
+
+    static class block {
+        boolean solid = true;
+        boolean intangible = false;
+        boolean empty = false;
+        boolean lit = false;
+    }
+
+    static class chunkData {
+        long expiration = 0;
+        block[][][] blockData = new block[16][256][16];
+        boolean stale = false;
+        boolean expired = false;
+        LinkedHashMap<Integer, layerSegment> layers = new LinkedHashMap<Integer, layerSegment>(16, 0.75f, true);
+        public chunkData() {
+            for(int i = 0; i < 16; i++ ) {
+                for(int j = 0; j < 256; j++ ) {
+                    for(int k = 0; k < 16; k++ ) {
+                        blockData[i][j][k] = new block();
+                    }
+                }
+            }
+        }
+    }
+
+    static class chunkCache extends LinkedHashMap<chunkID, chunkData> {
+        protected boolean removeEldestEntry(Map.Entry<chunkID, chunkData> eldest) {
+            chunkData thisChunk = eldest.getValue();
+            if (thisChunk.expired || (thisChunk.stale && thisChunk.expiration <= mindshaftScanner.now)) {
+                // Mindshaft.logger.info(now + ": removed chunk: " + eldest.getKey().x + ", " + eldest.getKey().z);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    static chunkCache chunksKnown = new chunkCache();
+    static LinkedList<chunkID> requestedChunks = new LinkedList<chunkID>();
 
     private int clamp(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -28,12 +142,140 @@ class mindshaftScanner {
 
         if (((player.getEntityWorld().getLightFor(EnumSkyBlock.BLOCK, pos) > 0)
                 || (player.getEntityWorld().provider.isSurfaceWorld())
-                        && (player.getEntityWorld().getLightFor(EnumSkyBlock.SKY, pos) > 0))
-
-        ) {
+                        && (player.getEntityWorld().getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
             return true;
         }
         return false;
+    }
+
+    private void requestChunk(chunkID chunk ) {
+        if ( ! requestedChunks.contains(chunk) ) {
+            // Mindshaft.logger.info(now+ ": requested chunk: " + chunk.x + ", " + chunk.z);
+            requestedChunks.add(chunk);
+        }
+    }
+
+    chunkData getChunk(chunkID chunk) {
+        chunkData thischunk = chunksKnown.get(chunk);
+        if (thischunk != null) {
+            if (!thischunk.stale && thischunk.expiration <= now) {
+                // Mindshaft.logger.info(now + ": stale chunk: " + chunk.x + ", " + chunk.z + ", stale at:" + thischunk.expiration );
+                thischunk.stale = true;
+                thischunk.expiration = now + forcedExpiry + random.nextInt(forcedExpiryFudge);
+                requestChunk(chunk);
+            } 
+            // Mindshaft.logger.info(now + ": fetched chunk: " + chunk.x + ", " + chunk.z + ", stale at:" + thischunk.expiration );
+            return chunksKnown.get(chunk);
+        } else {
+            requestChunk(chunk);
+        }
+        return null;
+    }
+
+    layerSegment getLayerSegment(chunkID chunk, Integer y) {
+        chunkData thisChunk = getChunk(chunk);
+        if (thisChunk == null) {
+            return emptyLayer;
+        }
+        random.setSeed(chunk.x * chunk.z);
+        layerSegment testSegment = new layerSegment(random.nextInt(0xFFFFFF));
+        return testSegment;
+    }
+
+    void scanChunk(World world, EntityPlayer player, chunkID chunk) {
+        chunkData newChunk = new chunkData();
+        newChunk.expiration = now + expiry + random.nextInt(expiryFudge);
+        // Mindshaft.logger.info(now + ": new chunk: " + chunk.x + ", " + chunk.z + ", stale at: " + newChunk.expiration);
+        for (int x = 0; x < 16; x++) {
+            for (int y = 0; y < 256; y++) {
+                for (int z = 0; z < 16; z++) {
+                    BlockPos pos = new BlockPos(chunk.x + x, y, chunk.z + z);
+                    IBlockState state = world.getBlockState(pos);
+                    Block blockID = state.getBlock();
+                    block thisBlock = newChunk.blockData[x][y][z];
+
+                    thisBlock.lit = true;
+                    thisBlock.lit = isLit(world, player, pos);
+
+                    if (state.isOpaqueCube() != true) {
+                        thisBlock.solid = false;
+
+                        if (state.getCollisionBoundingBox(world, pos) == null) {
+                            thisBlock.intangible = true;
+
+                            if (blockID.isAir(state, world, pos)) {
+                                thisBlock.empty = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        chunksKnown.put(chunk, newChunk);
+    }
+
+    public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
+        int pcX = (int) Math.floor(player.posX / 16.0);
+        int pcZ = (int) Math.floor(player.posZ / 16.0);
+        int chunkStartX = pcX - chunkRadius;
+        int chunkStartZ = pcZ - chunkRadius;
+        int chunkEndX = pcX + chunkRadius;
+        int chunkEndZ = pcZ + chunkRadius;
+        pcX-= 8;
+        pcZ-= 8;
+
+        for (int cX = 0; cX < 16; cX++) {
+            for (int cZ = 0; cZ < 16; cZ++) {
+                chunkID thisChunk = new chunkID(currentDim, cX + chunkStartX, cZ + chunkStartZ);
+                if( cX + pcX < chunkStartX || cX + pcX > chunkEndX || cZ + pcZ < chunkStartZ || cZ + pcZ > chunkEndZ ) {
+                    if( ! chunksKnown.containsKey(thisChunk)) {
+                        requestChunk(thisChunk);
+                    }
+                    continue;
+                }
+                layerSegment thisSegment = getLayerSegment(thisChunk, (int) (player.posY - fudgeY));
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        int color = thisSegment.color[x][z];
+                        int offset = (cX * 16 + x) + (( cZ * 16 + z) * 256);
+                        renderer.setTextureValue(offset, color);
+                    }
+                }
+            }
+        }
+        renderer.refreshTexture();
+    }
+
+    public void processChunks(World world, EntityPlayer player, zoomState zoom) {
+        now = world.getTotalWorldTime();
+        currentDim = world.provider.getDimension();
+        /*
+        chunkRadius = (int) Math.ceil(zoom.getZoomSpec().h / 16.0);
+        if (chunkRadius > 8 ) {
+            chunkRadius = 8;
+        }
+        if(chunkRadius < 1 ) {
+            chunkRadius = 1;
+        }
+        */
+        if (!requestedChunks.isEmpty()) {
+            int cacheCount = 0;
+            Iterator<chunkID> itr = requestedChunks.iterator();
+            while( itr.hasNext() && cacheCount++ <= chunkCacheMax ) {
+                scanChunk(world, player, itr.next());
+                itr.remove();
+            }
+            // Mindshaft.logger.info("requested count: " + requestedChunks.size());
+            /*
+            for (chunkID thisChunk : requestedChunks) {
+                if (cacheCount++ > chunkCacheMax) {
+                    break;
+                }
+                scanChunk(world, player, thisChunk);
+                ;
+            }*/
+        }
     }
 
     public void processLayer(World world, EntityPlayer player, BlockPos playerPos, mindshaftRenderer renderer,
@@ -73,7 +315,7 @@ class mindshaftScanner {
                     continue;
                 }
 
-                BlockPos pos = new BlockPos(playerPos.getX() + x, player.posY - (17 / 32D) + y, playerPos.getZ() + z);
+                BlockPos pos = new BlockPos(playerPos.getX() + x, player.posY - fudgeY + y, playerPos.getZ() + z);
                 IBlockState state = world.getBlockState(pos);
                 Block blockID = state.getBlock();
                 boolean solid = true;

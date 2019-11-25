@@ -54,7 +54,10 @@ public class Mindshaft {
             input.processKeys(zoom);
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
-                scanner.processBlocks(world, player, renderer, zoom);
+
+                scanner.processChunks(world, player, zoom);
+                scanner.rasterizeLayers(world, player, renderer, zoom);
+                //scanner.processBlocks(world, player, renderer, zoom);
             }
         }
     }
