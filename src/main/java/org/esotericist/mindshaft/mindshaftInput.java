@@ -10,7 +10,7 @@ class inputHandler {
     private static KeyBinding[] keyBindings;
     private boolean[] pressed;
 
-    public void processKeys() {
+    public void processKeys(zoomState zoom) {
         // binding 0: enable/disable toggle
         if (keyBindings[0].isPressed() && !pressed[0]) {
             if (mindshaftConfig.enabled) {
@@ -28,10 +28,10 @@ class inputHandler {
         // this doesn't have a config entry because it isn't meant to be persistent
         // across sessions.
         if (keyBindings[1].isPressed() && !pressed[1]) {
-            if (Mindshaft.zoom.fullscreen == false) {
-                Mindshaft.zoom.fullscreen = true;
+            if (zoom.fullscreen == false) {
+                zoom.fullscreen = true;
             } else {
-                Mindshaft.zoom.fullscreen = false;
+                zoom.fullscreen = false;
             }
         }
         if (!keyBindings[1].isPressed() && pressed[1]) {
@@ -40,7 +40,7 @@ class inputHandler {
 
         // binding 2: zoom in
         if (keyBindings[2].isPressed() && !pressed[2]) {
-            Mindshaft.zoom.nextZoom();
+            zoom.nextZoom();
             pressed[2] = true;
         }
         if (!keyBindings[2].isPressed() && pressed[2]) {
@@ -49,7 +49,7 @@ class inputHandler {
 
         // binding 3: zoom out
         if (keyBindings[3].isPressed() && !pressed[3]) {
-            Mindshaft.zoom.prevZoom();
+            zoom.prevZoom();
             pressed[3] = true;
         }
         if (!keyBindings[3].isPressed() && pressed[3]) {

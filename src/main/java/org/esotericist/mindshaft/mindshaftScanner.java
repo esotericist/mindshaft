@@ -40,7 +40,7 @@ class mindshaftScanner {
             zoomState zoom) {
 
         int y = layer - 15;
-        zoomSpec curzoom = Mindshaft.zoom.getZoomSpec();
+        zoomSpec curzoom = zoom.getZoomSpec();
         int overdraw = curzoom.overdraw;
         int minX = curzoom.x - overdraw;
         int minZ = curzoom.z - overdraw;

@@ -30,15 +30,15 @@ public class Mindshaft {
 
     static Logger logger;
 
-    static EntityPlayer player;
+    private static EntityPlayer player;
 
-    static mindshaftRenderer renderer = new mindshaftRenderer();
+    private static mindshaftRenderer renderer = new mindshaftRenderer();
 
-    static inputHandler input = new inputHandler();
+    private static inputHandler input = new inputHandler();
 
-    static zoomState zoom = new zoomState();
+    private static zoomState zoom = new zoomState();
 
-    static mindshaftScanner scanner = new mindshaftScanner();
+    private static mindshaftScanner scanner = new mindshaftScanner();
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
@@ -51,7 +51,7 @@ public class Mindshaft {
                 return;
             }
 
-            input.processKeys();
+            input.processKeys(zoom);
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
                 scanner.processBlocks(world, player, renderer, zoom);
@@ -61,7 +61,7 @@ public class Mindshaft {
 
     @SubscribeEvent // (priority = EventPriority.NORMAL)
     public void eventHandler(RenderGameOverlayEvent.Post event) {
-        renderer.doRender(event, player);
+        renderer.doRender(event, player, zoom);
     }
 
     @SubscribeEvent

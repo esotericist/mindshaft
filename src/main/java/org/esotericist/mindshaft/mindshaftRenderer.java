@@ -74,9 +74,9 @@ class mindshaftRenderer {
         refreshTexture();
     }
 
-    public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player) {
+    public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player, zoomState zoom) {
 
-        if ((!mindshaftConfig.enabled) && !(Mindshaft.zoom.fullscreen) || (player == null)) {
+        if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;
         }
 
@@ -104,7 +104,7 @@ class mindshaftRenderer {
 
         int cursorsize = mindshaftConfig.cursorsize;
 
-        if (Mindshaft.zoom.fullscreen == true) {
+        if (zoom.fullscreen == true) {
             offsetX = (screenX - fsmapsize) / 2;
             offsetY = (screenY - fsmapsize) / 2;
             mapsize = fsmapsize;
@@ -128,7 +128,7 @@ class mindshaftRenderer {
             minY = maxY - mapsize;
         }
 
-        zoomSpec currentzoom = Mindshaft.zoom.getZoomSpec();
+        zoomSpec currentzoom = zoom.getZoomSpec();
 
         double minU = currentzoom.minU + offsetU; // 0.0;
         double minV = currentzoom.minV + offsetV; // 0.0;
@@ -157,7 +157,7 @@ class mindshaftRenderer {
 
         GlStateManager.pushMatrix();
 
-        GlStateManager.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(Mindshaft.zoom.fullscreen));
+        GlStateManager.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
         textureManager.bindTexture(playericon);
 
