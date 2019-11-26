@@ -22,11 +22,7 @@ class zoomState {
 
         for (int i = 0; i < zoomcount; ++i) {
             int zoomsize = mindshaftConfig.zoomlevels[i];
-            int layerrate = mindshaftConfig.layerrate / zoomsize;
-            if (layerrate <= 0) {
-                layerrate = 1;
-            }
-            zoomlist[i].setZoomSpec(zoomsize, layerrate, 30);
+            zoomlist[i].setZoomSpec(zoomsize);
         }
         for (int i = 0; i < zoomcount; ++i) {
             Mindshaft.logger.info("zoomlist: " + i + ", x:" + zoomlist[i].x + ", z:" + zoomlist[i].z + ", w:"

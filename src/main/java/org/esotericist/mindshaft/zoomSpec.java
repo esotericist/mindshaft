@@ -1,6 +1,7 @@
 package org.esotericist.mindshaft;
 
 class zoomSpec {
+    public int r;
     public int x;
     public int z;
     public int w;
@@ -9,12 +10,10 @@ class zoomSpec {
     public double minV;
     public double maxU;
     public double maxV;
-    public float layerrate;
-    public int overdraw;
 
-    public void setZoomSpec(int x, int z, int w, int h, double minU, double minV, double maxU, double maxV,
-            float layerrate, int overdraw) {
+    public void setZoomSpec(int r, int x, int z, int w, int h, double minU, double minV, double maxU, double maxV) {
 
+        this.r = r;
         this.x = x;
         this.z = z;
         this.w = w;
@@ -23,11 +22,10 @@ class zoomSpec {
         this.minV = minV;
         this.maxU = maxU;
         this.maxV = maxV;
-        this.layerrate = layerrate;
-        this.overdraw = overdraw;
     }
 
-    public void setZoomSpec(int size, float layerrate, int overdraw) {
+    public void setZoomSpec(int r) {
+        int size = r * 16;
         int w = size;
         int h = size;
         int x = -(w / 2) + 1;
@@ -36,6 +34,6 @@ class zoomSpec {
         double minV = minU;
         double maxU = 1D - minU;
         double maxV = maxU;
-        setZoomSpec(x, z, w, h, minU, minV, maxU, maxV, layerrate, overdraw);
+        setZoomSpec(r, x, z, w, h, minU, minV, maxU, maxV);
     }
 }

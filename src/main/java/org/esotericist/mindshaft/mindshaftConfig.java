@@ -16,10 +16,12 @@ public class mindshaftConfig {
     public static boolean enabled = false;
 
     @Config.Comment({ "List of zoom levels available for both minimap and fullscreen.",
-            "Wider zoom levels have substantially more performance impact." })
-    @RangeInt(min = 16, max = 192)
+            "Specified as a radius in chunks.",
+            "Notably: centered on the northwest corner of the player's current chunk.",
+            "So a radius of 6 is 12 chunks (or 192 blocks) across." })
+    @RangeInt(min = 1, max = 14)
     @Name("Zoom level list")
-    public static int[] zoomlevels = { 192, 128, 64, 32 };
+    public static int[] zoomlevels = { 6, 4, 2, 1 };
 
     @Config.Comment({ "Manually specify minimap zoom level without using in-game key bindings", "Default zoom levels:",
             "0: 192 blocks across.", "1: 128 blocks across.", "2: 64 blocks across.", "3: 32 blocks across." })
@@ -34,13 +36,11 @@ public class mindshaftConfig {
     @Name("Current fullscreen zoom level")
     public static int zoomfs = 3;
 
-    @Config.Comment({ "Base rate for layer processing per tick, divided by current zoom level.",
-            "ex: 384 (default rate) / 192 (default largest zoom level) = 2 layers per tick.",
-            "Higher values result in greater rendering performance impact but faster update responsiveness.",
-            "If you experience stuttering, lower this value and/or use smaller zoom levels." })
-    @RangeInt(min = 128, max = 1024)
-    @Name("Layer processing rate")
-    public static int layerrate = 384;
+    @Config.Comment({ "How many chunks can be cached per tick.",
+                      "Can increase stuttering if too high." })
+    @RangeInt(min = 1, max = 8)
+    @Name("Chunk processing rate")
+    public static int chunkrate = 4;
 
     @Config.Comment({ "Size of minimap as expressed in percentage of the vertical size of the screen.",
             "Since the minimap is a square, it will be the same width as height." })

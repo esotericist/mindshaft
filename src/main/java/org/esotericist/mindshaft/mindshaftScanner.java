@@ -29,9 +29,6 @@ class mindshaftScanner {
     // fudge for player's current Y level
     private static final double fudgeY = 17 / 32D;
 
-    // how many chunks can be cached per tick
-    private static final int chunkCacheMax = 3;
-
     // minimum time in ticks before a chunk is considered stale
     private static final int expiry = 80;
 
@@ -313,7 +310,7 @@ class mindshaftScanner {
     layerSegment getLayerSegment(World world, chunkID chunk, int pY) {
         chunkData thisChunk = getChunk(chunk);
         if (thisChunk == null) {
-            return emptyLayer;
+            return null;
         }
         layerSegment thisSegment = chunksKnown.get(chunk).layers.get(pY);
         if (thisSegment == null) {
@@ -378,18 +375,36 @@ class mindshaftScanner {
     }
 
     public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        int pcX = (int) Math.floor(player.posX / 16.0) - 8;
-        int pcZ = (int) Math.floor(player.posZ / 16.0) - 8;
+        // int pcX = (int) Math.floor(player.posX / 16.0) - 8;
+        //int pcZ = (int) Math.floor(player.posZ / 16.0) - 8;
+
+        int pcX = (((int) player.posX ) >> 4) - 8 ;
+        int pcZ = (((int) player.posZ ) >> 4) - 8 ;
+        int radius = zoom.getZoomSpec().r + 2;
+        if ( radius > 8 ) {
+            radius = 8;
+        }
 
         for (int cX = 0; cX < 16; cX++) {
+            if( cX < 8 - radius || cX > 8 + radius ) {
+                continue;
+            }
             for (int cZ = 0; cZ < 16; cZ++) {
+                if( cZ < 8 - radius || cZ > 8 + radius ) {
+                    continue;
+                }
+                
                 chunkID thisChunk = new chunkID(currentDim, cX + pcX, cZ + pcZ);
                 layerSegment thisSegment = getLayerSegment(world, thisChunk, (int) (player.posY - fudgeY));
+                if(thisSegment == null ) {
+                    continue;
+                }
                 // Mindshaft.logger.info("cX: " + cX + ", cZ: " + cZ + "");
                 copyLayer(renderer, thisSegment, cX, cZ);
             }
         }
         renderer.refreshTexture();
+        renderer.updatePos((int) (player.posX) >> 4 , (int)(player.posZ) >> 4);
     }
 
     public void processChunks(World world) {
@@ -398,7 +413,7 @@ class mindshaftScanner {
         if (!requestedChunks.isEmpty()) {
             int cacheCount = 0;
             Iterator<chunkID> itr = requestedChunks.iterator();
-            while (itr.hasNext() && cacheCount++ <= chunkCacheMax) {
+            while (itr.hasNext() && cacheCount++ <= mindshaftConfig.chunkrate) {
                 scanChunk(world, itr.next());
                 itr.remove();
             }
@@ -407,7 +422,7 @@ class mindshaftScanner {
             int removeCount = 0;
             Set<Map.Entry<chunkID,chunkData>> entryset = chunksKnown.entrySet();
             Iterator<Map.Entry<chunkID,chunkData>> itr = entryset.iterator();
-            while( itr.hasNext() && removeCount++ <= chunkCacheMax) {
+            while( itr.hasNext() && removeCount++ <= mindshaftConfig.chunkrate) {
                 Map.Entry<chunkID,chunkData> entry = itr.next();
                 chunkData chunk = entry.getValue();
                 if( chunk.stale && chunk.expiration >= now ) {
