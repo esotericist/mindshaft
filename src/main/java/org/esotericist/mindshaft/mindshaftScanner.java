@@ -183,8 +183,10 @@ class mindshaftScanner {
         return null;
     }
 
-    void addLayerSegment(chunkID chunk ) {
-
+    layerSegment addLayerSegment(chunkID chunk) {
+        random.setSeed(chunk.x * chunk.z);
+        layerSegment testSegment = new layerSegment(random.nextInt(0xFFFFFF));
+        return testSegment;
     }
 
     layerSegment getLayerSegment(chunkID chunk, Integer y) {
@@ -192,9 +194,12 @@ class mindshaftScanner {
         if (thisChunk == null) {
             return emptyLayer;
         }
-        random.setSeed(chunk.x * chunk.z);
-        layerSegment testSegment = new layerSegment(random.nextInt(0xFFFFFF));
-        return testSegment;
+        layerSegment thisSegment = chunksKnown.get(chunk).layers.get(y);
+        if (thisSegment == null) {
+            thisSegment = addLayerSegment(chunk);
+        }
+
+        return thisSegment;
     }
 
     void scanChunk(World world, EntityPlayer player, chunkID chunk) {
@@ -231,36 +236,25 @@ class mindshaftScanner {
         chunksKnown.put(chunk, newChunk);
     }
 
+    void copyLayer(mindshaftRenderer renderer, layerSegment segment, int cX, int cZ ) {
+        for( int x = 0; x < 16; x++ ) {
+            for( int z = 0; z < 16; z++ ) {
+                int col = segment.getColor(x, z);
+                renderer.setTextureValue((cX * 16) + x, (cZ * 16) + z, col);
+            }
+        }
+    }
+
     public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        int pcX = (int) Math.floor(player.posX / 16.0);
-        int pcZ = (int) Math.floor(player.posZ / 16.0);
-        int chunkStartX = pcX - chunkRadius;
-        int chunkStartZ = pcZ - chunkRadius;
-        int chunkEndX = pcX + chunkRadius;
-        int chunkEndZ = pcZ + chunkRadius;
-        pcX -= 8;
-        pcZ -= 8;
+        int pcX = (int) Math.floor(player.posX / 16.0) - 8;
+        int pcZ = (int) Math.floor(player.posZ / 16.0) - 8;
 
         for (int cX = 0; cX < 16; cX++) {
             for (int cZ = 0; cZ < 16; cZ++) {
-                chunkID thisChunk = new chunkID(currentDim, cX + chunkStartX, cZ + chunkStartZ);
-                if (cX + pcX < chunkStartX || cX + pcX > chunkEndX || cZ + pcZ < chunkStartZ || cZ + pcZ > chunkEndZ) {
-                    if (!chunksKnown.containsKey(thisChunk)) {
-                        requestChunk(thisChunk);
-                    }
-                    continue;
-                }
+                chunkID thisChunk = new chunkID(currentDim, cX + pcX, cZ + pcZ);
                 layerSegment thisSegment = getLayerSegment(thisChunk, (int) (player.posY - fudgeY));
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        int tX = cX * 16 + x;
-                        int tZ = cZ * 16 + z;
-
-                        int color = thisSegment.getColor(x, z);
-
-                        renderer.setTextureValue(tX, tZ, color);
-                    }
-                }
+                // Mindshaft.logger.info("cX: " + cX + ", cZ: " + cZ + "");
+                copyLayer(renderer, thisSegment, cX, cZ);
             }
         }
         renderer.refreshTexture();
@@ -269,7 +263,6 @@ class mindshaftScanner {
     public void processChunks(World world, EntityPlayer player, zoomState zoom) {
         now = world.getTotalWorldTime();
         currentDim = world.provider.getDimension();
-         chunkRadius = (int) Math.ceil(zoom.getZoomSpec().h / 16.0); if (chunkRadius > 8 ) { chunkRadius = 8; } if(chunkRadius < 1 ) { chunkRadius = 1; }
         if (!requestedChunks.isEmpty()) {
             int cacheCount = 0;
             Iterator<chunkID> itr = requestedChunks.iterator();

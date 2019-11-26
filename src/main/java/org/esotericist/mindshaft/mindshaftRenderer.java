@@ -96,7 +96,7 @@ class mindshaftRenderer {
         double offsetU = ((player.posX % 16) - (lastX % 16) - 1) * texelsize;
         double offsetV = ((player.posZ % 16) - (lastZ % 16) - 1) * texelsize;
 
-        Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
+        // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
         double screenX = event.getResolution().getScaledWidth();
         double screenY = event.getResolution().getScaledHeight();
@@ -145,7 +145,7 @@ class mindshaftRenderer {
         double maxU = currentzoom.maxU + offsetU; // 1.0;
         double maxV = currentzoom.maxV + offsetV; // 1.0;
 
-        Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
+        // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
 
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
