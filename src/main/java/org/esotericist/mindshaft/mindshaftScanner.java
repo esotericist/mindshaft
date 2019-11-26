@@ -4,7 +4,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -23,15 +22,6 @@ import java.util.Iterator;
 class mindshaftScanner {
 
     Random random = new Random();
-
-    private int layer = 0;
-
-    private int startX = 0;
-    private int startZ = 0;
-
-    private float nextlayer = 0;
-
-    private static int section;
 
     private static long now = 0;
     private static int currentDim = 0;
@@ -101,13 +91,6 @@ class mindshaftScanner {
         }
     }
 
-    static class block {
-        boolean solid = true;
-        boolean intangible = false;
-        boolean empty = false;
-        boolean lit = false;
-    }
-
     static class chunkData {
         long expiration = 0;
 
@@ -116,7 +99,6 @@ class mindshaftScanner {
         BitSet empty = new BitSet(65536);
         BitSet lit = new BitSet(65536);
 
-        //block[][][] blockData = new block[16][256][16];
         boolean stale = false;
         boolean expired = false;
         LinkedHashMap<Integer, layerSegment> layers = new LinkedHashMap<Integer, layerSegment>(16, 0.75f, true);
@@ -341,31 +323,6 @@ class mindshaftScanner {
         return thisSegment;
     }
 
-
-    block getBlock(World world, chunkID chunk, int x, int y, int z ) {
-        BlockPos pos = new BlockPos( chunk.x * 16 + x, y, chunk.z * 16 + z );
-        block thisBlock = new block();
-
-        IBlockState state = world.getBlockState(pos);
-        Block blockID = state.getBlock();
-
-        thisBlock.lit = true;
-        thisBlock.lit = isLit(world, pos);
-
-        if (state.isOpaqueCube() != true) {
-            thisBlock.solid = false;
-
-            if (state.getCollisionBoundingBox(world, pos) == null) {
-                thisBlock.intangible = true;
-
-                if (blockID.isAir(state, world, pos)) {
-                    thisBlock.empty = true;
-                }
-            }
-        }
-
-        return thisBlock;
-    }
 
     void scanChunk(World world, chunkID chunk) {
         chunkData newChunk = new chunkData();
