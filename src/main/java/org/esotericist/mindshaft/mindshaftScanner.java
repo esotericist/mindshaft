@@ -150,8 +150,7 @@ class mindshaftScanner {
     private boolean isLit(World world, BlockPos pos) {
 
         if (((world.getLightFor(EnumSkyBlock.BLOCK, pos) > 0)
-                || (world.provider.isSurfaceWorld())
-                        && (world.getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
+                || (world.provider.isSurfaceWorld()) && (world.getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
             return true;
         }
         return false;
@@ -236,9 +235,9 @@ class mindshaftScanner {
         chunksKnown.put(chunk, newChunk);
     }
 
-    void copyLayer(mindshaftRenderer renderer, layerSegment segment, int cX, int cZ ) {
-        for( int x = 0; x < 16; x++ ) {
-            for( int z = 0; z < 16; z++ ) {
+    void copyLayer(mindshaftRenderer renderer, layerSegment segment, int cX, int cZ) {
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
                 int col = segment.getColor(x, z);
                 renderer.setTextureValue((cX * 16) + x, (cZ * 16) + z, col);
             }
