@@ -93,8 +93,8 @@ class mindshaftRenderer {
 
         textureManager.bindTexture(mapresource);
 
-        double offsetU = ((player.posX % 16) - (lastX % 16) - 1) * texelsize;
-        double offsetV = ((player.posZ % 16) - (lastZ % 16) - 1) * texelsize;
+        double offsetU = ((player.posX % 16) - (lastX % 16) ) * texelsize;
+        double offsetV = ((player.posZ % 16) - (lastZ % 16) ) * texelsize;
 
         // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 

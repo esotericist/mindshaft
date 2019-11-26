@@ -30,7 +30,6 @@ class mindshaftScanner {
     private float nextlayer = 0;
 
     private static long now = 0;
-    private static int chunkRadius = 8;
     private static int currentDim = 0;
 
     // fudge for player's current Y level
@@ -182,23 +181,137 @@ class mindshaftScanner {
         return null;
     }
 
-    layerSegment addLayerSegment(chunkID chunk) {
+    int processColumn(World world, chunkID chunk, int x, int z, int pY) {
+        int color = defaultColor;
+        int red = 0;
+        int blue = 0;
+        int green = 0;
+
+        int dist;
+
+        chunkData thisChunk = chunksKnown.get(chunk);
+
+        for (int y = -15; y < 17; y++) {
+            int intensity = 0;
+            dist = Math.abs(y);
+
+            if( y + pY < 0 ) {
+                green = green + 17;
+                continue;
+            }
+            if( y + pY > 255  ) {
+                blue = blue + 16;
+                continue;
+            }
+
+            block thisBlock = thisChunk.blockData[x][y + pY ][z];
+
+            if (y > 1) {
+                dist--;
+            }
+            if (y == 1) {
+                dist = 0;
+            }
+            if (dist > 10) {
+                dist = 10;
+            }
+
+            if (!thisBlock.intangible || !thisBlock.lit) {
+                if (dist > 0) {
+                    intensity = (11 - dist);
+                } else {
+                    intensity = 17;
+                }
+                if (!thisBlock.solid && thisBlock.lit) {
+                    intensity = intensity - 3;
+                }
+            }
+
+            intensity = Math.max(intensity, 0);
+
+            green = green + intensity;
+            if (thisBlock.empty && thisBlock.lit) {
+                if (y < 0) {
+                    red = red + (15 - dist);
+                }
+                if (y > 1) {
+                    blue = blue + (16 - dist);
+                }
+            }
+        }
+
+        color = clamp(red, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(blue, 0, 255);
+        // Mindshaft.logger.info(
+        //    "chunk xz:" + chunk.x + "," + chunk.z +
+        //    " xyz:" + x + "," + pY + "," + z + " rgb:" + red + "," + green + "," + blue);
+        return color;
+    }
+
+    layerSegment processSegment(World world, chunkID chunk, int pY) {
+        layerSegment segment = new layerSegment(defaultColor);
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+
+                int c = processColumn(world, chunk, x, z, pY);
+                segment.setColor(x, z, c);
+            }
+        }
+
+        return segment;
+    }
+
+
+    layerSegment addLayerSegment(World world, chunkID chunk, int pY) {
+        layerSegment segment = processSegment(world, chunk, pY);
+        chunksKnown.get(chunk).layers.put(pY, segment);
+        
+        return segment;
+
+        /*
         random.setSeed(chunk.x * chunk.z);
         layerSegment testSegment = new layerSegment(random.nextInt(0xFFFFFF));
         return testSegment;
+        */
     }
 
-    layerSegment getLayerSegment(chunkID chunk, Integer y) {
+    layerSegment getLayerSegment(World world, chunkID chunk, int pY) {
         chunkData thisChunk = getChunk(chunk);
         if (thisChunk == null) {
             return emptyLayer;
         }
-        layerSegment thisSegment = chunksKnown.get(chunk).layers.get(y);
+        layerSegment thisSegment = chunksKnown.get(chunk).layers.get(pY);
         if (thisSegment == null) {
-            thisSegment = addLayerSegment(chunk);
+            thisSegment = addLayerSegment(world, chunk, pY);
         }
 
         return thisSegment;
+    }
+
+
+    block getBlock(World world, chunkID chunk, int x, int y, int z ) {
+        BlockPos pos = new BlockPos( chunk.x * 16 + x, y, chunk.z * 16 + z );
+        block thisBlock = new block();
+
+        IBlockState state = world.getBlockState(pos);
+        Block blockID = state.getBlock();
+
+        thisBlock.lit = true;
+        thisBlock.lit = isLit(world, pos);
+
+        if (state.isOpaqueCube() != true) {
+            thisBlock.solid = false;
+
+            if (state.getCollisionBoundingBox(world, pos) == null) {
+                thisBlock.intangible = true;
+
+                if (blockID.isAir(state, world, pos)) {
+                    thisBlock.empty = true;
+                }
+            }
+        }
+
+        return thisBlock;
     }
 
     void scanChunk(World world, chunkID chunk) {
@@ -209,25 +322,7 @@ class mindshaftScanner {
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 256; y++) {
                 for (int z = 0; z < 16; z++) {
-                    BlockPos pos = new BlockPos(chunk.x + x, y, chunk.z + z);
-                    IBlockState state = world.getBlockState(pos);
-                    Block blockID = state.getBlock();
-                    block thisBlock = newChunk.blockData[x][y][z];
-
-                    thisBlock.lit = true;
-                    thisBlock.lit = isLit(world, pos);
-
-                    if (state.isOpaqueCube() != true) {
-                        thisBlock.solid = false;
-
-                        if (state.getCollisionBoundingBox(world, pos) == null) {
-                            thisBlock.intangible = true;
-
-                            if (blockID.isAir(state, world, pos)) {
-                                thisBlock.empty = true;
-                            }
-                        }
-                    }
+                    newChunk.blockData[x][y][z] = getBlock(world, chunk, x, y, z);
                 }
             }
         }
@@ -251,7 +346,7 @@ class mindshaftScanner {
         for (int cX = 0; cX < 16; cX++) {
             for (int cZ = 0; cZ < 16; cZ++) {
                 chunkID thisChunk = new chunkID(currentDim, cX + pcX, cZ + pcZ);
-                layerSegment thisSegment = getLayerSegment(thisChunk, (int) (player.posY - fudgeY));
+                layerSegment thisSegment = getLayerSegment(world, thisChunk, (int) (player.posY - fudgeY));
                 // Mindshaft.logger.info("cX: " + cX + ", cZ: " + cZ + "");
                 copyLayer(renderer, thisSegment, cX, cZ);
             }
