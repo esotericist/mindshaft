@@ -39,17 +39,17 @@ class mindshaftScanner {
     private static final int chunkCacheMax = 3;
 
     // minimum time in ticks before a chunk is considered stale
-    private static final int expiry = 20000;
+    private static final int expiry = 80;
 
     // random addition in ticks to expiry
     private static final int expiryFudge = 100;
 
     // minimum time in ticks before a chunk is forcibly removed
     // actual forced expiration time is forcedExpiry + expiry
-    private static final int forcedExpiry = 160000;
+    private static final int forcedExpiry = 800;
 
     // random addition in ticks to forcedExpiry
-    private static final int forcedExpiryFudge = 2000;
+    private static final int forcedExpiryFudge = 1000;
 
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
@@ -364,11 +364,10 @@ class mindshaftScanner {
                 scanChunk(world, itr.next());
                 itr.remove();
             }
-            // Mindshaft.logger.info("requested count: " + requestedChunks.size());
-            /*
-             * for (chunkID thisChunk : requestedChunks) { if (cacheCount++ > chunkCacheMax)
-             * { break; } scanChunk(world, player, thisChunk); ; }
-             */
+        }
+        if (! chunksKnown.isEmpty()) {
+            int removeCount = 0;
+            
         }
     }
 
