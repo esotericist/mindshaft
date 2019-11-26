@@ -46,7 +46,7 @@ class mindshaftScanner {
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
 
-    //private layerSegment emptyLayer = new layerSegment(defaultColor);
+    // private layerSegment emptyLayer = new layerSegment(defaultColor);
 
     static class chunkID {
         int dimension, x, z;
@@ -101,7 +101,7 @@ class mindshaftScanner {
         boolean expired = false;
         LinkedHashMap<Integer, layerSegment> layers = new LinkedHashMap<Integer, layerSegment>(16, 0.75f, true);
 
-        int calcOffset(int x, int y, int z ) {
+        int calcOffset(int x, int y, int z) {
             return z + 16 * (y + 256 * x);
         }
 
@@ -140,14 +140,9 @@ class mindshaftScanner {
         public chunkData() {
             solid.set(0, 65536, true);
             /*
-            for (int i = 0; i < 16; i++) {
-                for (int j = 0; j < 256; j++) {
-                    for (int k = 0; k < 16; k++) {
-                        blockData[i][j][k] = new block();
-                    }
-                }
-            }
-            */
+             * for (int i = 0; i < 16; i++) { for (int j = 0; j < 256; j++) { for (int k =
+             * 0; k < 16; k++) { blockData[i][j][k] = new block(); } } }
+             */
         }
     }
 
@@ -224,16 +219,16 @@ class mindshaftScanner {
             int intensity = 0;
             dist = Math.abs(y);
 
-            if( y + pY < 0 ) {
+            if (y + pY < 0) {
                 green = green + 17;
                 continue;
             }
-            if( y + pY > 255  ) {
+            if (y + pY > 255) {
                 blue = blue + 16;
                 continue;
             }
 
-            //block thisBlock = thisChunk.blockData[x][y + pY ][z];
+            // block thisBlock = thisChunk.blockData[x][y + pY ][z];
             boolean solid = thisChunk.getSolid(x, y + pY, z);
             boolean intangible = thisChunk.getIntangible(x, y + pY, z);
             boolean empty = thisChunk.getEmpty(x, y + pY, z);
@@ -275,8 +270,8 @@ class mindshaftScanner {
 
         color = clamp(red, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(blue, 0, 255);
         // Mindshaft.logger.info(
-        //    "chunk xz:" + chunk.x + "," + chunk.z +
-        //    " xyz:" + x + "," + pY + "," + z + " rgb:" + red + "," + green + "," + blue);
+        // "chunk xz:" + chunk.x + "," + chunk.z +
+        // " xyz:" + x + "," + pY + "," + z + " rgb:" + red + "," + green + "," + blue);
         return color;
     }
 
@@ -294,18 +289,16 @@ class mindshaftScanner {
         return segment;
     }
 
-
     layerSegment addLayerSegment(World world, chunkID chunk, int pY) {
         layerSegment segment = processSegment(world, chunk, pY);
         chunksKnown.get(chunk).layers.put(pY, segment);
-        
+
         return segment;
 
         /*
-        random.setSeed(chunk.x * chunk.z);
-        layerSegment testSegment = new layerSegment(random.nextInt(0xFFFFFF));
-        return testSegment;
-        */
+         * random.setSeed(chunk.x * chunk.z); layerSegment testSegment = new
+         * layerSegment(random.nextInt(0xFFFFFF)); return testSegment;
+         */
     }
 
     layerSegment getLayerSegment(World world, chunkID chunk, int pY) {
@@ -321,7 +314,6 @@ class mindshaftScanner {
         return thisSegment;
     }
 
-
     void scanChunk(World world, chunkID chunk) {
         chunkData newChunk = new chunkData();
         newChunk.expiration = now + expiry + random.nextInt(expiryFudge);
@@ -331,22 +323,22 @@ class mindshaftScanner {
             for (int y = 0; y < 256; y++) {
                 for (int z = 0; z < 16; z++) {
 
-                    BlockPos pos = new BlockPos( chunk.x * 16 + x, y, chunk.z * 16 + z );
-            
+                    BlockPos pos = new BlockPos(chunk.x * 16 + x, y, chunk.z * 16 + z);
+
                     IBlockState state = world.getBlockState(pos);
                     Block blockID = state.getBlock();
-            
+
                     boolean lit = isLit(world, pos);
                     boolean solid = true;
                     boolean intangible = false;
                     boolean empty = false;
-            
+
                     if (state.isOpaqueCube() != true) {
                         solid = false;
-            
+
                         if (state.getCollisionBoundingBox(world, pos) == null) {
                             intangible = true;
-            
+
                             if (blockID.isAir(state, world, pos)) {
                                 empty = true;
                             }
@@ -357,7 +349,7 @@ class mindshaftScanner {
                     newChunk.setSolid(x, y, z, solid);
                     newChunk.setIntangible(x, y, z, intangible);
                     newChunk.setEmpty(x, y, z, empty);
-            
+
                     // newChunk.blockData[x][y][z] = getBlock(world, chunk, x, y, z);
                 }
             }
@@ -376,28 +368,29 @@ class mindshaftScanner {
     }
 
     public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        int pcX = (((int) player.posX ) >> 4) - 8 ;
-        int pcZ = (((int) player.posZ ) >> 4) - 8 ;
+        int pcX = (((int) player.posX) >> 4) - 8;
+        int pcZ = (((int) player.posZ) >> 4) - 8;
 
         int radius = zoom.getZoomSpec().r + 2;
-        if ( radius > 8 ) {
+        if (radius > 8) {
             radius = 8;
         }
 
         int segmentrate = (int) Math.ceil(256.0 / mindshaftConfig.refreshdelay);
         int segmentcount = 0;
+
         for (int cX = 0; cX < 16; cX++) {
-            if( cX < 8 - radius || cX > 8 + radius ) {
+            if (cX < 8 - radius || cX > 8 + radius) {
                 continue;
             }
             for (int cZ = 0; cZ < 16; cZ++) {
-                if( cZ < 8 - radius || cZ > 8 + radius ) {
+                if (cZ < 8 - radius || cZ > 8 + radius) {
                     continue;
                 }
-                
+
                 chunkID thisChunk = new chunkID(currentDim, cX + pcX, cZ + pcZ);
                 layerSegment thisSegment = getLayerSegment(world, thisChunk, (int) (player.posY - fudgeY));
-                if(thisSegment == null ) {
+                if (thisSegment == null) {
                     continue;
                 }
                 // Mindshaft.logger.info("cX: " + cX + ", cZ: " + cZ + "");
@@ -405,7 +398,7 @@ class mindshaftScanner {
             }
         }
         renderer.refreshTexture();
-        renderer.updatePos((int) (player.posX) >> 4 , (int)(player.posZ) >> 4);
+        renderer.updatePos((int) (player.posX) >> 4, (int) (player.posZ) >> 4);
     }
 
     public void processChunks(World world) {
@@ -419,14 +412,14 @@ class mindshaftScanner {
                 itr.remove();
             }
         }
-        if (! chunksKnown.isEmpty()) {
+        if (!chunksKnown.isEmpty()) {
             int removeCount = 0;
-            Set<Map.Entry<chunkID,chunkData>> entryset = chunksKnown.entrySet();
-            Iterator<Map.Entry<chunkID,chunkData>> itr = entryset.iterator();
-            while( itr.hasNext() && removeCount++ <= mindshaftConfig.chunkrate) {
-                Map.Entry<chunkID,chunkData> entry = itr.next();
+            Set<Map.Entry<chunkID, chunkData>> entryset = chunksKnown.entrySet();
+            Iterator<Map.Entry<chunkID, chunkData>> itr = entryset.iterator();
+            while (itr.hasNext() && removeCount++ <= mindshaftConfig.chunkrate) {
+                Map.Entry<chunkID, chunkData> entry = itr.next();
                 chunkData chunk = entry.getValue();
-                if( chunk.stale && chunk.expiration >= now ) {
+                if (chunk.stale && chunk.expiration >= now) {
                     itr.remove();
                 }
             }
