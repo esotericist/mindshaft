@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 
 class mindshaftScanner {
@@ -29,6 +30,8 @@ class mindshaftScanner {
     private int startZ = 0;
 
     private float nextlayer = 0;
+
+    private static int section;
 
     private static long now = 0;
     private static int currentDim = 0;
@@ -107,12 +110,56 @@ class mindshaftScanner {
 
     static class chunkData {
         long expiration = 0;
-        block[][][] blockData = new block[16][256][16];
+
+        BitSet solid = new BitSet(65536);
+        BitSet intangible = new BitSet(65536);
+        BitSet empty = new BitSet(65536);
+        BitSet lit = new BitSet(65536);
+
+        //block[][][] blockData = new block[16][256][16];
         boolean stale = false;
         boolean expired = false;
         LinkedHashMap<Integer, layerSegment> layers = new LinkedHashMap<Integer, layerSegment>(16, 0.75f, true);
 
+        int calcOffset(int x, int y, int z ) {
+            return z + 16 * (y + 256 * x);
+        }
+
+        public boolean getSolid(int x, int y, int z) {
+            return solid.get(calcOffset(x, y, z));
+        }
+
+        public void setSolid(int x, int y, int z, boolean b) {
+            solid.set(calcOffset(x, y, z), b);
+        }
+
+        public boolean getIntangible(int x, int y, int z) {
+            return intangible.get(calcOffset(x, y, z));
+        }
+
+        public void setIntangible(int x, int y, int z, boolean b) {
+            intangible.set(calcOffset(x, y, z), b);
+        }
+
+        public boolean getEmpty(int x, int y, int z) {
+            return empty.get(calcOffset(x, y, z));
+        }
+
+        public void setEmpty(int x, int y, int z, boolean b) {
+            empty.set(calcOffset(x, y, z), b);
+        }
+
+        public boolean getLit(int x, int y, int z) {
+            return lit.get(calcOffset(x, y, z));
+        }
+
+        public void setLit(int x, int y, int z, boolean b) {
+            lit.set(calcOffset(x, y, z), b);
+        }
+
         public chunkData() {
+            solid.set(0, 65536, true);
+            /*
             for (int i = 0; i < 16; i++) {
                 for (int j = 0; j < 256; j++) {
                     for (int k = 0; k < 16; k++) {
@@ -120,6 +167,7 @@ class mindshaftScanner {
                     }
                 }
             }
+            */
         }
     }
 
@@ -205,7 +253,11 @@ class mindshaftScanner {
                 continue;
             }
 
-            block thisBlock = thisChunk.blockData[x][y + pY ][z];
+            //block thisBlock = thisChunk.blockData[x][y + pY ][z];
+            boolean solid = thisChunk.getSolid(x, y + pY, z);
+            boolean intangible = thisChunk.getIntangible(x, y + pY, z);
+            boolean empty = thisChunk.getEmpty(x, y + pY, z);
+            boolean lit = thisChunk.getLit(x, y + pY, z);
 
             if (y > 1) {
                 dist--;
@@ -217,13 +269,13 @@ class mindshaftScanner {
                 dist = 10;
             }
 
-            if (!thisBlock.intangible || !thisBlock.lit) {
+            if (!intangible || !lit) {
                 if (dist > 0) {
                     intensity = (11 - dist);
                 } else {
                     intensity = 17;
                 }
-                if (!thisBlock.solid && thisBlock.lit) {
+                if (!solid && lit) {
                     intensity = intensity - 3;
                 }
             }
@@ -231,7 +283,7 @@ class mindshaftScanner {
             intensity = Math.max(intensity, 0);
 
             green = green + intensity;
-            if (thisBlock.empty && thisBlock.lit) {
+            if (empty && lit) {
                 if (y < 0) {
                     red = red + (15 - dist);
                 }
@@ -323,7 +375,35 @@ class mindshaftScanner {
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 256; y++) {
                 for (int z = 0; z < 16; z++) {
-                    newChunk.blockData[x][y][z] = getBlock(world, chunk, x, y, z);
+
+                    BlockPos pos = new BlockPos( chunk.x * 16 + x, y, chunk.z * 16 + z );
+            
+                    IBlockState state = world.getBlockState(pos);
+                    Block blockID = state.getBlock();
+            
+                    boolean lit = isLit(world, pos);
+                    boolean solid = true;
+                    boolean intangible = false;
+                    boolean empty = false;
+            
+                    if (state.isOpaqueCube() != true) {
+                        solid = false;
+            
+                        if (state.getCollisionBoundingBox(world, pos) == null) {
+                            intangible = true;
+            
+                            if (blockID.isAir(state, world, pos)) {
+                                empty = true;
+                            }
+                        }
+                    }
+
+                    newChunk.setLit(x, y, z, lit);
+                    newChunk.setSolid(x, y, z, solid);
+                    newChunk.setIntangible(x, y, z, intangible);
+                    newChunk.setEmpty(x, y, z, empty);
+            
+                    // newChunk.blockData[x][y][z] = getBlock(world, chunk, x, y, z);
                 }
             }
         }
@@ -377,8 +457,6 @@ class mindshaftScanner {
                     itr.remove();
                 }
             }
-            
-            
         }
     }
 }
