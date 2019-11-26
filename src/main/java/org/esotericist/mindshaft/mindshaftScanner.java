@@ -25,6 +25,7 @@ class mindshaftScanner {
 
     private static long now = 0;
     private static int currentDim = 0;
+    private static int currentTick = 0;
 
     // fudge for player's current Y level
     private static final double fudgeY = 17 / 32D;
@@ -45,7 +46,7 @@ class mindshaftScanner {
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
 
-    private layerSegment emptyLayer = new layerSegment(defaultColor);
+    //private layerSegment emptyLayer = new layerSegment(defaultColor);
 
     static class chunkID {
         int dimension, x, z;
@@ -375,16 +376,16 @@ class mindshaftScanner {
     }
 
     public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        // int pcX = (int) Math.floor(player.posX / 16.0) - 8;
-        //int pcZ = (int) Math.floor(player.posZ / 16.0) - 8;
-
         int pcX = (((int) player.posX ) >> 4) - 8 ;
         int pcZ = (((int) player.posZ ) >> 4) - 8 ;
+
         int radius = zoom.getZoomSpec().r + 2;
         if ( radius > 8 ) {
             radius = 8;
         }
 
+        int segmentrate = (int) Math.ceil(256.0 / mindshaftConfig.refreshdelay);
+        int segmentcount = 0;
         for (int cX = 0; cX < 16; cX++) {
             if( cX < 8 - radius || cX > 8 + radius ) {
                 continue;

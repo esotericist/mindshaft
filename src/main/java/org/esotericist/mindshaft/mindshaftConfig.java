@@ -19,7 +19,7 @@ public class mindshaftConfig {
             "Specified as a radius in chunks.",
             "Notably: centered on the northwest corner of the player's current chunk.",
             "So a radius of 6 is 12 chunks (or 192 blocks) across." })
-    @RangeInt(min = 1, max = 14)
+    @RangeInt(min = 1, max = 7)
     @Name("Zoom level list")
     public static int[] zoomlevels = { 6, 4, 2, 1 };
 
@@ -41,6 +41,12 @@ public class mindshaftConfig {
     @RangeInt(min = 1, max = 8)
     @Name("Chunk processing rate")
     public static int chunkrate = 4;
+
+    @Config.Comment({ "How many ticks it takes to update the map.",
+                      "Higher numbers reduce stuttering, but increase map lag." })
+    @RangeInt(min = 1, max = 8)
+    @Name("Map refresh delay")
+    public static int refreshdelay = 2;
 
     @Config.Comment({ "Size of minimap as expressed in percentage of the vertical size of the screen.",
             "Since the minimap is a square, it will be the same width as height." })
