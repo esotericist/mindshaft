@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -367,6 +368,16 @@ class mindshaftScanner {
         }
         if (! chunksKnown.isEmpty()) {
             int removeCount = 0;
+            Set<Map.Entry<chunkID,chunkData>> entryset = chunksKnown.entrySet();
+            Iterator<Map.Entry<chunkID,chunkData>> itr = entryset.iterator();
+            while( itr.hasNext() && removeCount++ <= chunkCacheMax) {
+                Map.Entry<chunkID,chunkData> entry = itr.next();
+                chunkData chunk = entry.getValue();
+                if( chunk.stale && chunk.expiration >= now ) {
+                    itr.remove();
+                }
+            }
+            
             
         }
     }
