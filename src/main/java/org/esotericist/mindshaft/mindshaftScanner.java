@@ -367,9 +367,17 @@ class mindshaftScanner {
         }
     }
 
+    private static int pX;
+    private static int pZ;
+
     public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        int pcX = (((int) player.posX) >> 4) - 8;
-        int pcZ = (((int) player.posZ) >> 4) - 8;
+        if( currentTick == 0 ) {
+            pX = (int)(player.posX) >> 4;
+            pZ = (int)(player.posZ) >> 4;
+        }
+
+        int pcX = (pX) - 8;
+        int pcZ = (pZ) - 8;
 
         int radius = zoom.getZoomSpec().r + 2;
         if (radius > 8) {
@@ -377,8 +385,32 @@ class mindshaftScanner {
         }
 
         int segmentrate = (int) Math.ceil(256.0 / mindshaftConfig.refreshdelay);
-        int segmentcount = 0;
+        int segmentcount = segmentrate * currentTick;
+        
 
+        for(int i = segmentcount; i < segmentcount + segmentrate; i++) {
+            if( i >= 256) {
+                break;
+            }
+            int cX = i / 16;
+            int cZ = i % 16;
+            if (cX < 8 - radius || cX > 8 + radius) {
+                continue;
+            }
+            if (cZ < 8 - radius || cZ > 8 + radius) {
+                continue;
+            }
+            chunkID thisChunk = new chunkID(currentDim, cX + pcX, cZ + pcZ);
+            layerSegment thisSegment = getLayerSegment(world, thisChunk, (int) (player.posY - fudgeY));
+            if (thisSegment == null) {
+                continue;
+            }
+            // Mindshaft.logger.info("cX: " + cX + ", cZ: " + cZ + "");
+            copyLayer(renderer, thisSegment, cX, cZ);
+        }
+        
+
+        /*
         for (int cX = 0; cX < 16; cX++) {
             if (cX < 8 - radius || cX > 8 + radius) {
                 continue;
@@ -397,8 +429,13 @@ class mindshaftScanner {
                 copyLayer(renderer, thisSegment, cX, cZ);
             }
         }
-        renderer.refreshTexture();
-        renderer.updatePos((int) (player.posX) >> 4, (int) (player.posZ) >> 4);
+        */
+        if( currentTick++ >= mindshaftConfig.refreshdelay ) {
+            renderer.refreshTexture();
+            renderer.updatePos(pX, pZ);
+            currentTick = 0;
+        }
+
     }
 
     public void processChunks(World world) {

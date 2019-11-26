@@ -42,11 +42,11 @@ public class mindshaftConfig {
     @Name("Chunk processing rate")
     public static int chunkrate = 4;
 
-    @Config.Comment({ "How many ticks it takes to update the map.",
+    @Config.Comment({ "How many extra ticks it takes to update the map.",
                       "Higher numbers reduce stuttering, but increase map lag." })
-    @RangeInt(min = 1, max = 8)
+    @RangeInt(min = 0, max = 8)
     @Name("Map refresh delay")
-    public static int refreshdelay = 2;
+    public static int refreshdelay = 1;
 
     @Config.Comment({ "Size of minimap as expressed in percentage of the vertical size of the screen.",
             "Since the minimap is a square, it will be the same width as height." })

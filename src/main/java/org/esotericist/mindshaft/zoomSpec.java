@@ -25,7 +25,7 @@ class zoomSpec {
     }
 
     public void setZoomSpec(int r) {
-        int size = r * 16;
+        int size = r * 32;
         int w = size;
         int h = size;
         int x = -(w / 2) + 1;
