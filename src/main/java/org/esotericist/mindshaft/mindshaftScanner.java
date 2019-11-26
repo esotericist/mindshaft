@@ -147,11 +147,11 @@ class mindshaftScanner {
         return Math.min(Math.max(value, min), max);
     }
 
-    private boolean isLit(World world, EntityPlayer player, BlockPos pos) {
+    private boolean isLit(World world, BlockPos pos) {
 
-        if (((player.getEntityWorld().getLightFor(EnumSkyBlock.BLOCK, pos) > 0)
-                || (player.getEntityWorld().provider.isSurfaceWorld())
-                        && (player.getEntityWorld().getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
+        if (((world.getLightFor(EnumSkyBlock.BLOCK, pos) > 0)
+                || (world.provider.isSurfaceWorld())
+                        && (world.getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
             return true;
         }
         return false;
@@ -202,7 +202,7 @@ class mindshaftScanner {
         return thisSegment;
     }
 
-    void scanChunk(World world, EntityPlayer player, chunkID chunk) {
+    void scanChunk(World world, chunkID chunk) {
         chunkData newChunk = new chunkData();
         newChunk.expiration = now + expiry + random.nextInt(expiryFudge);
         // Mindshaft.logger.info(now + ": new chunk: " + chunk.x + ", " + chunk.z + ",
@@ -216,7 +216,7 @@ class mindshaftScanner {
                     block thisBlock = newChunk.blockData[x][y][z];
 
                     thisBlock.lit = true;
-                    thisBlock.lit = isLit(world, player, pos);
+                    thisBlock.lit = isLit(world, pos);
 
                     if (state.isOpaqueCube() != true) {
                         thisBlock.solid = false;
@@ -260,14 +260,14 @@ class mindshaftScanner {
         renderer.refreshTexture();
     }
 
-    public void processChunks(World world, EntityPlayer player, zoomState zoom) {
+    public void processChunks(World world) {
         now = world.getTotalWorldTime();
         currentDim = world.provider.getDimension();
         if (!requestedChunks.isEmpty()) {
             int cacheCount = 0;
             Iterator<chunkID> itr = requestedChunks.iterator();
             while (itr.hasNext() && cacheCount++ <= chunkCacheMax) {
-                scanChunk(world, player, itr.next());
+                scanChunk(world, itr.next());
                 itr.remove();
             }
             // Mindshaft.logger.info("requested count: " + requestedChunks.size());
@@ -335,7 +335,7 @@ class mindshaftScanner {
                     dist = 10;
                 }
 
-                lit = isLit(world, player, pos);
+                lit = isLit(world, pos);
 
                 if (state.isOpaqueCube() != true) {
                     solid = false;

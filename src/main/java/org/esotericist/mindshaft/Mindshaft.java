@@ -55,7 +55,7 @@ public class Mindshaft {
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
 
-                scanner.processChunks(world, player, zoom);
+                scanner.processChunks(world);
                 scanner.rasterizeLayers(world, player, renderer, zoom);
                 //scanner.processBlocks(world, player, renderer, zoom);
             }
