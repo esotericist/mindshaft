@@ -40,6 +40,11 @@ public class mindshaftConfig {
     @Name("Current fullscreen zoom level")
     public static int zoomfs = 3;
 
+    @Config.Comment({"Whether the zoom in/zoom out key bindings should wrap around.",
+                     "e.g. when zooming in at the tightest zoom level, go to the widest zoom level."})
+    @Name("Zoom Wraparound")
+    public static boolean zoomwrap = false;
+
     @Config.Comment({ "How many segments (chunk tiles) can be cached per tick.",
                       "Can increase graphical stuttering if too high.",
                       "Lower values increase the visibility of tile scanning,",
