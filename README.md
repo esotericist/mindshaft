@@ -6,11 +6,11 @@
 
 a density-focused minimap, loosely inspired by Rei's Minimap of the days of yore.
 
-has: fullscreen toggle, configurable zoom levels, an ugly player cursor, a fairly esoteric indicator of whether voids are above or below player, and a small amount of stutter to rendering that will probably drive some people spare
+has: fullscreen toggle, configurable zoom levels, fairly configurable performance facets, an ugly player cursor (programmer art!), and a fairly esoteric indicator of whether voids are above or below player
 
-todo: threaded processing (lol someday), more configurable performance facets (meantime, you can just drop problematic zoom levels), rendering settings (not everyone will want the fancy colored bits?), cheat mode? (disable light checks)
+todo: threaded processing (lol someday), rendering style settings (not everyone will want the fancy colored bits?), cheat mode? (disable light checks), 1.14.4 port
 
-meantime: it works. ship it.
+at this point, i consider this ready to use.
 
 ### okay but seriously what is it?
 
