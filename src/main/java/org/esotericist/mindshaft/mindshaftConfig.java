@@ -18,7 +18,9 @@ public class mindshaftConfig {
     @Config.Comment({ "List of zoom levels available for both minimap and fullscreen.",
             "Specified as a radius in chunks.",
             "Notably: centered on the northwest corner of the player's current chunk.",
-            "So a radius of 6 is 12 chunks (or 192 blocks) across." })
+            "So a radius of 6 is 12 chunks (or 192 blocks) across.",
+            "It's best if these are in numerical order (ascending or descending),",
+            "otherwise the order they cyle through may not be as expected." })
     @RangeInt(min = 1, max = 7)
     @Name("Zoom level list")
     public static int[] zoomlevels = { 6, 4, 2, 1 };
@@ -36,14 +38,16 @@ public class mindshaftConfig {
     @Name("Current fullscreen zoom level")
     public static int zoomfs = 3;
 
-    @Config.Comment({ "How many chunks can be cached per tick.",
-                      "Can increase stuttering if too high." })
-    @RangeInt(min = 1, max = 8)
-    @Name("Chunk processing rate")
-    public static int chunkrate = 4;
+    @Config.Comment({ "How many segments (chunk tiles) can be cached per tick.",
+                      "Can increase graphical stuttering if too high.",
+                      "Lower values increase the visibility of tile scanning,",
+                      "most especially at wider zoom levels." })
+    @RangeInt(min = 8, max = 256)
+    @Name("Segment processing rate")
+    public static int chunkrate = 24;
 
     @Config.Comment({ "How many extra ticks it takes to update the map.",
-                      "Higher numbers reduce stuttering, but increase map lag." })
+                      "Higher numbers reduce graphical stuttering in the game itself, but increase map lag." })
     @RangeInt(min = 0, max = 8)
     @Name("Map refresh delay")
     public static int refreshdelay = 1;
