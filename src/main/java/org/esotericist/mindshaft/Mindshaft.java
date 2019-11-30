@@ -2,27 +2,33 @@ package org.esotericist.mindshaft;
 
 import net.minecraft.client.Minecraft;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
-
+import net.minecraftforge.common.ForgeConfig;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.InputEvent;
+
+
 
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Mindshaft.MODID, name = Mindshaft.NAME, // version = Mindshaft.VERSION,
-        clientSideOnly = true, dependencies = "after:forge@[14.23.4.2705,)")
+@Mod(Mindshaft.MODID)
 public class Mindshaft {
     public static final String MODID = "mindshaft";
     public static final String NAME = "Mindshaft";
@@ -30,13 +36,13 @@ public class Mindshaft {
 
     static Logger logger;
 
-    private static EntityPlayer player;
+    private static PlayerEntity player;
 
     private static mindshaftRenderer renderer = new mindshaftRenderer();
 
     private static inputHandler input = new inputHandler();
 
-    private static zoomState zoom = new zoomState();
+    public static zoomState zoom = new zoomState();
 
     private static mindshaftScanner scanner = new mindshaftScanner();
 
@@ -51,7 +57,7 @@ public class Mindshaft {
                 return;
             }
 
-            input.processKeys(zoom);
+            //input.processKeys(zoom);
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
 

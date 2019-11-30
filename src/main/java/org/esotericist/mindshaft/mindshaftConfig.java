@@ -1,10 +1,15 @@
 package org.esotericist.mindshaft;
 
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Config.Name;
-import net.minecraftforge.common.config.Config.RangeInt;
-import net.minecraftforge.common.config.Config.Type;
-import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.common.ForgeConfig;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+
+// import net.minecraftforge.common.config.Config;
+// import net.minecraftforge.common.config.Config.Name;
+// import net.minecraftforge.common.config.Config.RangeInt;
+// import net.minecraftforge.common.config.Config.Type;
+// import net.minecraftforge.common.config.ConfigManager;
 
 @Config(modid = Mindshaft.MODID, type = Type.INSTANCE)
 @Config.LangKey("mindshaft.config.title")

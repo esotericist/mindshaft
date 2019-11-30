@@ -1,15 +1,17 @@
 package org.esotericist.mindshaft;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 import net.minecraft.client.Minecraft;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -20,7 +22,7 @@ class mindshaftRenderer {
 
     private TextureManager textureManager;
     private DynamicTexture mapTexture;
-    private int[] mapTextureData;
+    private NativeImage nativeTexture;
     private ResourceLocation mapresource;
     private ResourceLocation playericon;
 
@@ -43,24 +45,25 @@ class mindshaftRenderer {
         mapTexture.updateDynamicTexture();
     }
 
-    public void setTextureValue(int pos, int val) {
-        mapTextureData[pos] = val;
-    }
-
     public void setTextureValue(int x, int y, int val) {
-        setTextureValue(x + (y * 256), val);
+        nativeTexture.setPixelRGBA(x, y, val);
     }
 
+    /*
     public int[] getTextureData() {
         return mapTextureData;
     }
+    */
 
+    /*
     public int getTextureValue(int pos) {
         return mapTextureData[pos];
     }
+    */
 
     public int getTextureValue(int x, int y) {
-        return getTextureValue(x + (y * 256));
+        return nativeTexture.getPixelRGBA(x, y);
+        //return getTextureValue(x + (y * 256));
     }
 
     public void updatePos(int x, int z) {
@@ -69,20 +72,25 @@ class mindshaftRenderer {
     }
 
     public void initAssets() {
-        mapTexture = new DynamicTexture(texturesize, texturesize);
-        mapTextureData = mapTexture.getTextureData();
-        textureManager = Minecraft.getMinecraft().getTextureManager();
+
+        mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
+        nativeTexture = mapTexture.getTextureData();
+
+        textureManager = Minecraft.getInstance().getTextureManager();
+
 
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
-        for (int i = 0; i < getTextureData().length; ++i) {
-            setTextureValue(i, 0x002200);
+        for (int i = 0; i < texturesize; ++i) {
+            for( int j = 0; j < texturesize; ++i) {
+                setTextureValue(i, j, 0x002200);
+            }
         }
         refreshTexture();
     }
 
-    public void doRender(RenderGameOverlayEvent.Post event, EntityPlayer player, zoomState zoom) {
+    public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;
@@ -98,8 +106,8 @@ class mindshaftRenderer {
 
         // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
-        double screenX = event.getResolution().getScaledWidth();
-        double screenY = event.getResolution().getScaledHeight();
+        double screenX = event.getWindow().getScaledWidth();
+        double screenY = event.getWindow().getScaledHeight();
 
         double mapsize = mindshaftConfig.getMapsize() * screenY;
         double fsmapsize = mindshaftConfig.getFSMapsize() * screenY;
@@ -147,9 +155,9 @@ class mindshaftRenderer {
 
         // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
 
-        GlStateManager.disableAlpha();
+        GlStateManager.alphaFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); //disableAlpha();
         GlStateManager.disableBlend();
-        GlStateManager.resetColor();
+        GlStateManager.clearCurrentColor(); //.resetColor();
         GlStateManager.disableLighting();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
@@ -169,13 +177,13 @@ class mindshaftRenderer {
 
         GlStateManager.pushMatrix();
 
-        GlStateManager.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(zoom.fullscreen));
+        // GlStateManager //.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
-        textureManager.bindTexture(playericon);
+        textureManager.bindTexture(playericon);  //.bindTexture(playericon);
 
-        GlStateManager.enableAlpha();
+        //GlStateManager.enableAlpha();
 
-        GlStateManager.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0);
+        GlStateManager.translated(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
 
         double cminX = 0;
         double cminY = 0;
@@ -184,8 +192,8 @@ class mindshaftRenderer {
 
         double centeroffset = cursorsize / 16.0;
 
-        GlStateManager.rotate(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translate(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
+        GlStateManager.rotated(180 + player.getRotationYawHead(), 0, 0, 1);
+        GlStateManager.translated(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(cminX, cmaxY, 0).tex(cminU, cmaxV).endVertex();
@@ -194,8 +202,10 @@ class mindshaftRenderer {
         renderer.pos(cminX, cminY, 0).tex(cminU, cminV).endVertex();
         tessellator.draw();
 
-        GlStateManager.color(1, 1, 1, 1);
-        GlStateManager.disableAlpha();
+        // GlStateManager.color(1, 1, 1, 1);
+        //GlStateManager.disableAlpha();
+
         GlStateManager.popMatrix();
+        GlStateManager.disableBlend();
     }
 }

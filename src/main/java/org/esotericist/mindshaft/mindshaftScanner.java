@@ -1,12 +1,15 @@
 package org.esotericist.mindshaft;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+// import net.minecraft.block.state.IBlockState;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.LightType;
+//import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
+import net.minecraftforge.common.extensions.IForgeBlockState;
 
 import java.lang.Math;
 import java.util.Map;
@@ -166,8 +169,8 @@ class mindshaftScanner {
 
     private boolean isLit(World world, BlockPos pos) {
 
-        if (((world.getLightFor(EnumSkyBlock.BLOCK, pos) > 0)
-                || (world.provider.isSurfaceWorld()) && (world.getLightFor(EnumSkyBlock.SKY, pos) > 0))) {
+        if (((world.getLightFor(LightType.BLOCK, pos) > 0)
+                || (world.dimension.isSurfaceWorld()) && (world.getLightFor(LightType.SKY, pos) > 0))) {
             return true;
         }
         return false;
@@ -203,17 +206,18 @@ class mindshaftScanner {
 
                 BlockPos pos = new BlockPos(segX + x, segY + y, segZ + z);
 
-                IBlockState state = world.getBlockState(pos);
-                Block blockID = state.getBlock();
+                IForgeBlockState iState = world.getBlockState(pos);
+                BlockState bState = iState.getBlockState(); //.getBlock();
+                Block block = bState.getBlock();
                 lit = isLit(world, pos);
-    
-                if (state.isOpaqueCube() != true) {
+
+                if (Block.isOpaque(bState.getRenderShape(world, pos)) != true) {
                     solid = false;
-    
-                    if (state.getCollisionBoundingBox(world, pos) == null) {
+
+                    if (bState.getCollisionShape(world, pos) == null) {
                         intangible = true;
     
-                        if (blockID.isAir(state, world, pos)) {
+                        if (block.isAir(bState, world, pos)) {
                             empty = true;
                         }
                     }
@@ -313,7 +317,7 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
+    public void rasterizeLayers(World world, PlayerEntity player, mindshaftRenderer renderer, zoomState zoom) {
         if( currentTick == 0 ) {
             pX = (int)(player.posX) >> 4;
             pZ = (int)(player.posZ) >> 4;
@@ -371,8 +375,9 @@ class mindshaftScanner {
 
     public void processChunks(World world, double y) {
         int pY = (int) (y - fudgeY);
-        now = world.getTotalWorldTime();
-        currentDim = world.provider.getDimension();
+        now = world.getGameTime();  //getTotalWorldTime();
+        currentDim = world.getDimension().getType().getId();
+
         if (!requestedsegments.isEmpty()) {
             int cacheCount = 0;
             Iterator<requestID> itr = requestedsegments.iterator();
