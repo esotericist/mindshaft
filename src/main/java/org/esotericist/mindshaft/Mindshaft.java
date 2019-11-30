@@ -14,6 +14,7 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -38,18 +39,32 @@ public class Mindshaft {
 
     private static PlayerEntity player;
 
+    public static mindshaftConfig config = new mindshaftConfig();
+
     private static mindshaftRenderer renderer = new mindshaftRenderer();
 
-    private static inputHandler input = new inputHandler();
+    private static inputHandler input;
 
     public static zoomState zoom = new zoomState();
 
     private static mindshaftScanner scanner = new mindshaftScanner();
 
+    public Mindshaft() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+    }
+
+
+    public void setup(FMLClientSetupEvent event ) {
+
+        input = new inputHandler();
+        MinecraftForge.EVENT_BUS.register(input); 
+
+    }
+
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            Minecraft mc = Minecraft.getMinecraft();
+            Minecraft mc = Minecraft.getInstance();
 
             player = mc.player;
             World world = mc.world;
@@ -77,18 +92,21 @@ public class Mindshaft {
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
 
         if (event.getModID().equals(Mindshaft.MODID)) {
-            ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
+            //ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
             zoom.initzooms();
         }
     }
 
+    /*
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
 
         MinecraftForge.EVENT_BUS.register(this);
     }
+    */
 
+    /*
     @EventHandler
     public void init(FMLInitializationEvent event) {
         input.initBindings();
@@ -103,4 +121,5 @@ public class Mindshaft {
 
         renderer.initAssets();
     }
+    */
 }
