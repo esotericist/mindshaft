@@ -35,7 +35,7 @@ public class mindshaftConfig {
             // "Minimap zoom level when adjusted with key bindings is also saved here."})
     // @RangeInt(min = 0, max = 255)
     // @Name("Current zoom level")
-    public static int zoom = 3;
+    public static int zoom = 2;
 
     // @Config.Comment({ "Manually specify fullscreen map zoom level without using in-game key bindings",
             // "Default zoom levels:", "0: 192 blocks across.", "1: 128 blocks across.", "2: 64 blocks across.",
@@ -43,7 +43,7 @@ public class mindshaftConfig {
             // "Fullscreen map zoom level when adjusted with key bindings is also saved here." })
     // @RangeInt(min = 0, max = 255)
     // @Name("Current fullscreen zoom level")
-    public static int zoomfs = 3;
+    public static int zoomfs = 2;
 
     // @Config.Comment({"Whether the zoom in/zoom out key bindings should wrap around.",
                      // "e.g. when zooming in at the tightest zoom level, go to the widest zoom level."})

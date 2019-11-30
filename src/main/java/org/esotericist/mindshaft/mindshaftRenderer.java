@@ -22,7 +22,6 @@ class mindshaftRenderer {
 
     private TextureManager textureManager;
     private DynamicTexture mapTexture;
-    private NativeImage nativeTexture;
     private ResourceLocation mapresource;
     private ResourceLocation playericon;
 
@@ -46,7 +45,7 @@ class mindshaftRenderer {
     }
 
     public void setTextureValue(int x, int y, int val) {
-        nativeTexture.setPixelRGBA(x, y, val);
+        mapTexture.getTextureData().setPixelRGBA(x, y, val);
     }
 
     /*
@@ -62,7 +61,7 @@ class mindshaftRenderer {
     */
 
     public int getTextureValue(int x, int y) {
-        return nativeTexture.getPixelRGBA(x, y);
+        return mapTexture.getTextureData().getPixelRGBA(x, y);
         //return getTextureValue(x + (y * 256));
     }
 
@@ -73,10 +72,11 @@ class mindshaftRenderer {
 
     public void initAssets() {
 
-        mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
-        nativeTexture = mapTexture.getTextureData();
-
         textureManager = Minecraft.getInstance().getTextureManager();
+
+        mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
+        // nativeTexture = mapTexture.getTextureData();
+
 
 
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
@@ -90,7 +90,7 @@ class mindshaftRenderer {
         refreshTexture();
     }
 
-    public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {
+    public void doRender(RenderGameOverlayEvent.Pre event, PlayerEntity player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;

@@ -16,6 +16,8 @@ import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import net.minecraftforge.fml.common.Mod;
@@ -25,7 +27,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.InputEvent;
 
-
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +37,7 @@ public class Mindshaft {
     public static final String NAME = "Mindshaft";
     // public static final String VERSION = "1.0";
 
-    static Logger logger;
+    public static final Logger logger = LogManager.getLogger();
 
     private static PlayerEntity player;
 
@@ -56,14 +58,25 @@ public class Mindshaft {
 
     public void setup(FMLClientSetupEvent event ) {
 
+        MinecraftForge.EVENT_BUS.register(this);
+
         input = new inputHandler();
         MinecraftForge.EVENT_BUS.register(input); 
+        zoom.initzooms();
+        // logger.info("setup");
 
     }
 
     @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        renderer.initAssets();
+    }
+
+    @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
+        // logger.info("tick");
         if (event.phase == TickEvent.Phase.END) {
+            // logger.info("tick interior");
             Minecraft mc = Minecraft.getInstance();
 
             player = mc.player;
@@ -83,8 +96,9 @@ public class Mindshaft {
         }
     }
 
-    @SubscribeEvent // (priority = EventPriority.NORMAL)
-    public void eventHandler(RenderGameOverlayEvent.Post event) {
+    @SubscribeEvent(priority = EventPriority.NORMAL)
+    public void RenderGameOverlayEvent(RenderGameOverlayEvent.Pre event) {
+        logger.info("render");
         renderer.doRender(event, player, zoom);
     }
 
@@ -102,7 +116,6 @@ public class Mindshaft {
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
 
-        MinecraftForge.EVENT_BUS.register(this);
     }
     */
 
