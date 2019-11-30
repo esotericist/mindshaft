@@ -1,9 +1,12 @@
 package org.esotericist.mindshaft;
 
+/*
 import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+
+*/
 
 // import net.minecraftforge.common.config.Config;
 // import net.minecraftforge.common.config.Config.Name;
@@ -68,13 +71,13 @@ public class mindshaftConfig {
             // "Since the minimap is a square, it will be the same width as height." })
     // @RangeInt(min = 10, max = 50)
     // @Name("Minimap width")
-    public static int mapwidth = 20;
+    public static int mapwidth = 35;
 
     // @Config.Comment({ "Size of fullscreen map as expressed in percentage of the vertical size of the screen.",
             // "Since the map is a square, it will be the same width as height." })
     // @RangeInt(min = 30, max = 100)
     // @Name("Fullscreen minimap width")
-    public static int mapwidthfs = 80;
+    public static int mapwidthfs = 85;
 
     // @Config.Comment({ "Set false to base the minimap offset on the right side of the screen." })
     // @Name("Is offset from left?")

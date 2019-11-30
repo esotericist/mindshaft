@@ -18,6 +18,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+
+//import org.apache.logging.log4j.core.Logger;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -214,13 +217,17 @@ class mindshaftScanner {
                 if (Block.isOpaque(bState.getRenderShape(world, pos)) != true) {
                     solid = false;
 
+                    // Mindshaft.logger.info("intangiblecheck");
                     if (bState.getCollisionShape(world, pos) == null) {
                         intangible = true;
-    
-                        if (block.isAir(bState, world, pos)) {
-                            empty = true;
-                        }
                     }
+    
+                    // Mindshaft.logger.info("aircheck");
+                    if (block.isAir(block.getDefaultState(), world, pos)) {
+                        empty = true;
+                        intangible = true;
+                    }
+
                 }
             }
 
@@ -258,7 +265,7 @@ class mindshaftScanner {
             }
         }
 
-        color = clamp(red, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(blue, 0, 255);
+        color = 0xFF  << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
         return color;
     }
 

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
@@ -20,6 +19,7 @@ import org.lwjgl.opengl.GL11;
 
 class mindshaftRenderer {
 
+    public boolean initialized = false;
     private TextureManager textureManager;
     private DynamicTexture mapTexture;
     private ResourceLocation mapresource;
@@ -82,15 +82,17 @@ class mindshaftRenderer {
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
-        for (int i = 0; i < texturesize; ++i) {
-            for( int j = 0; j < texturesize; ++i) {
+        for (int i = 0; i < texturesize; i++) {
+            for( int j = 0; j < texturesize; j++) {
                 setTextureValue(i, j, 0x002200);
             }
         }
         refreshTexture();
+
+        initialized = true;
     }
 
-    public void doRender(RenderGameOverlayEvent.Pre event, PlayerEntity player, zoomState zoom) {
+    public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;
@@ -155,7 +157,8 @@ class mindshaftRenderer {
 
         // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
 
-        GlStateManager.alphaFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); //disableAlpha();
+        GlStateManager.disableAlphaTest();
+        //GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); //disableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.clearCurrentColor(); //.resetColor();
         GlStateManager.disableLighting();
@@ -181,7 +184,7 @@ class mindshaftRenderer {
 
         textureManager.bindTexture(playericon);  //.bindTexture(playericon);
 
-        //GlStateManager.enableAlpha();
+        GlStateManager.enableAlphaTest();
 
         GlStateManager.translated(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
 

@@ -2,30 +2,23 @@ package org.esotericist.mindshaft;
 
 import net.minecraft.client.Minecraft;
 
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
-import net.minecraftforge.common.ForgeConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.TickEvent.ClientTickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -68,7 +61,8 @@ public class Mindshaft {
     }
 
     @SubscribeEvent
-    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+    public void textureStichEvent(TextureStitchEvent.Post event) {
+        logger.info("stitch");
         renderer.initAssets();
     }
 
@@ -96,9 +90,13 @@ public class Mindshaft {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.NORMAL)
-    public void RenderGameOverlayEvent(RenderGameOverlayEvent.Pre event) {
-        logger.info("render");
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void RenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
+        if(! renderer.initialized) {
+            logger.info("init");
+            renderer.initAssets();
+        }
+        // logger.info("render");
         renderer.doRender(event, player, zoom);
     }
 
