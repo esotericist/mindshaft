@@ -92,7 +92,7 @@ public class mindshaftConfig {
 
     // @Config.Comment({ "Set false to base the minimap offset on the bottom side of the screen." })
     // @Name("Is offset from top?")
-    public static boolean offsetfromtop = false;
+    public static boolean offsetfromtop = true;
 
     // @Config.Comment({ "The minimap edge is offset this far from the edge of the screen.",
             // "Expressed as percentage of vertical screen width.", "0 is flush to edge.",
