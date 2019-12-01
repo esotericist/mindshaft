@@ -19,7 +19,6 @@ import org.lwjgl.opengl.GL11;
 
 class mindshaftRenderer {
 
-    public boolean initialized = false;
     private TextureManager textureManager;
     private DynamicTexture mapTexture;
     private ResourceLocation mapresource;
@@ -88,8 +87,6 @@ class mindshaftRenderer {
             }
         }
         refreshTexture();
-
-        initialized = true;
     }
 
     public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {

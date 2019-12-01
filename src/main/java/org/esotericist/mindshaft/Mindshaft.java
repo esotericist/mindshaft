@@ -18,7 +18,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -48,6 +47,11 @@ public class Mindshaft {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
     }
 
+    public static class assetinit implements Runnable {
+        public void run() {
+            renderer.initAssets();
+        }
+    }
 
     public void setup(FMLClientSetupEvent event ) {
 
@@ -57,13 +61,8 @@ public class Mindshaft {
         MinecraftForge.EVENT_BUS.register(input); 
         zoom.initzooms();
         // logger.info("setup");
+        Minecraft.getInstance().enqueue( new assetinit() );
 
-    }
-
-    @SubscribeEvent
-    public void textureStichEvent(TextureStitchEvent.Post event) {
-        logger.info("stitch");
-        renderer.initAssets();
     }
 
     @SubscribeEvent
@@ -92,10 +91,6 @@ public class Mindshaft {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void RenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
-        if(! renderer.initialized) {
-            logger.info("init");
-            renderer.initAssets();
-        }
         // logger.info("render");
         renderer.doRender(event, player, zoom);
     }
