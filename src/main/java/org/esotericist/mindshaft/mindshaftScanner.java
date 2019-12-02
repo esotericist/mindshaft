@@ -214,20 +214,15 @@ class mindshaftScanner {
                 Block block = bState.getBlock();
                 lit = isLit(world, pos);
 
-                if (Block.isOpaque(bState.getRenderShape(world, pos)) != true) {
+                if (!bState.isSolid()) {
                     solid = false;
-
-                    // Mindshaft.logger.info("intangiblecheck");
-                    if (bState.getCollisionShape(world, pos) == null) {
+                    lit = isLit(world, pos);
+                    if (bState.getCollisionShape(world, pos).isEmpty()) {
                         intangible = true;
+                        if (block.isAir(block.getDefaultState(), world, pos)) {
+                            empty = true;
+                        }
                     }
-    
-                    // Mindshaft.logger.info("aircheck");
-                    if (block.isAir(block.getDefaultState(), world, pos)) {
-                        empty = true;
-                        intangible = true;
-                    }
-
                 }
             }
 
