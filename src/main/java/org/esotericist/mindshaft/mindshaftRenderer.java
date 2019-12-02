@@ -48,20 +48,16 @@ class mindshaftRenderer {
     }
 
     /*
-    public int[] getTextureData() {
-        return mapTextureData;
-    }
-    */
+     * public int[] getTextureData() { return mapTextureData; }
+     */
 
     /*
-    public int getTextureValue(int pos) {
-        return mapTextureData[pos];
-    }
-    */
+     * public int getTextureValue(int pos) { return mapTextureData[pos]; }
+     */
 
     public int getTextureValue(int x, int y) {
         return mapTexture.getTextureData().getPixelRGBA(x, y);
-        //return getTextureValue(x + (y * 256));
+        // return getTextureValue(x + (y * 256));
     }
 
     public void updatePos(int x, int z) {
@@ -76,13 +72,11 @@ class mindshaftRenderer {
         mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
         // nativeTexture = mapTexture.getTextureData();
 
-
-
         mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
         for (int i = 0; i < texturesize; i++) {
-            for( int j = 0; j < texturesize; j++) {
+            for (int j = 0; j < texturesize; j++) {
                 setTextureValue(i, j, 0x002200);
             }
         }
@@ -100,8 +94,8 @@ class mindshaftRenderer {
 
         textureManager.bindTexture(mapresource);
 
-        double offsetU = ((player.posX) - (lastX * 16) ) * texelsize;
-        double offsetV = ((player.posZ) - (lastZ * 16) ) * texelsize;
+        double offsetU = ((player.posX) - (lastX * 16)) * texelsize;
+        double offsetV = ((player.posZ) - (lastZ * 16)) * texelsize;
 
         // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
@@ -152,12 +146,14 @@ class mindshaftRenderer {
         double maxU = currentzoom.maxU + offsetU; // 1.0;
         double maxV = currentzoom.maxV + offsetV; // 1.0;
 
-        // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" + maxV);
+        // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" +
+        // maxV);
 
         GlStateManager.disableAlphaTest();
-        //GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA); //disableAlpha();
+        // GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        // //disableAlpha();
         GlStateManager.disableBlend();
-        GlStateManager.clearCurrentColor(); //.resetColor();
+        GlStateManager.clearCurrentColor(); // .resetColor();
         GlStateManager.disableLighting();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
@@ -177,9 +173,10 @@ class mindshaftRenderer {
 
         GlStateManager.pushMatrix();
 
-        // GlStateManager //.color(1f, 1f, 1f, mindshaftConfig.getCursorOpacity(zoom.fullscreen));
+        // GlStateManager //.color(1f, 1f, 1f,
+        // mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
-        textureManager.bindTexture(playericon);  //.bindTexture(playericon);
+        textureManager.bindTexture(playericon); // .bindTexture(playericon);
 
         GlStateManager.enableAlphaTest();
 
@@ -203,7 +200,7 @@ class mindshaftRenderer {
         tessellator.draw();
 
         // GlStateManager.color(1, 1, 1, 1);
-        //GlStateManager.disableAlpha();
+        // GlStateManager.disableAlpha();
 
         GlStateManager.popMatrix();
         GlStateManager.disableBlend();

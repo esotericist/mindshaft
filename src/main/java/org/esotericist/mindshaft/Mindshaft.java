@@ -53,15 +53,15 @@ public class Mindshaft {
         }
     }
 
-    public void setup(FMLClientSetupEvent event ) {
+    public void setup(FMLClientSetupEvent event) {
 
         MinecraftForge.EVENT_BUS.register(this);
 
         input = new inputHandler();
-        MinecraftForge.EVENT_BUS.register(input); 
+        MinecraftForge.EVENT_BUS.register(input);
         zoom.initzooms();
         // logger.info("setup");
-        Minecraft.getInstance().enqueue( new assetinit() );
+        Minecraft.getInstance().enqueue(new assetinit());
 
     }
 
@@ -78,13 +78,13 @@ public class Mindshaft {
                 return;
             }
 
-            //input.processKeys(zoom);
+            // input.processKeys(zoom);
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
 
                 scanner.processChunks(player.getEntityWorld(), player.posY);
                 scanner.rasterizeLayers(world, player, renderer, zoom);
-                //scanner.processBlocks(world, player, renderer, zoom);
+                // scanner.processBlocks(world, player, renderer, zoom);
             }
         }
     }
@@ -99,33 +99,28 @@ public class Mindshaft {
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
 
         if (event.getModID().equals(Mindshaft.MODID)) {
-            //ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
+            // ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
             zoom.initzooms();
         }
     }
 
     /*
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        logger = event.getModLog();
-
-    }
-    */
+     * @EventHandler public void preInit(FMLPreInitializationEvent event) { logger =
+     * event.getModLog();
+     * 
+     * }
+     */
 
     /*
-    @EventHandler
-    public void init(FMLInitializationEvent event) {
-        input.initBindings();
-
-        ConfigManager.sync(MODID, Config.Type.INSTANCE);
-
-        zoom.initzooms();
-    }
-
-    @EventHandler
-    public void PostInit(FMLPostInitializationEvent event) {
-
-        renderer.initAssets();
-    }
-    */
+     * @EventHandler public void init(FMLInitializationEvent event) {
+     * input.initBindings();
+     * 
+     * ConfigManager.sync(MODID, Config.Type.INSTANCE);
+     * 
+     * zoom.initzooms(); }
+     * 
+     * @EventHandler public void PostInit(FMLPostInitializationEvent event) {
+     * 
+     * renderer.initAssets(); }
+     */
 }

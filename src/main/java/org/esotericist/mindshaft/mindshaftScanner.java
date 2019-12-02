@@ -101,22 +101,22 @@ class mindshaftScanner {
 
         public int compareTo(requestID other) {
             int c = 0;
-            if( this.isNew && !other.isNew ) {
+            if (this.isNew && !other.isNew) {
                 c = -1;
-            } else if( !this.isNew && other.isNew) {
+            } else if (!this.isNew && other.isNew) {
                 c = 1;
             } else {
                 // larger values are 'closer' due to other implementation details
                 // so the order of this comparison is inverted relative others
                 c = other.dist - this.dist;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.x - other.x;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.z - other.z;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.y - other.y;
             }
             return c;
@@ -146,7 +146,6 @@ class mindshaftScanner {
             expiration = now + mindshaftConfig.forcedExpiry;
         }
     }
-
 
     static class segmentCache extends LinkedHashMap<segmentID, layerSegment> {
         protected boolean removeEldestEntry(Map.Entry<segmentID, layerSegment> eldest) {
@@ -205,14 +204,13 @@ class mindshaftScanner {
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if( y + segY >= 0 ) {
+            } else if (y + segY >= 0) {
 
                 BlockPos pos = new BlockPos(segX + x, segY + y, segZ + z);
 
                 IForgeBlockState iState = world.getBlockState(pos);
-                BlockState bState = iState.getBlockState(); //.getBlock();
+                BlockState bState = iState.getBlockState(); // .getBlock();
                 Block block = bState.getBlock();
-                lit = isLit(world, pos);
 
                 if (!bState.isSolid()) {
                     solid = false;
@@ -260,7 +258,7 @@ class mindshaftScanner {
             }
         }
 
-        color = 0xFF  << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
+        color = 0xFF << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
         return color;
     }
 
@@ -291,14 +289,14 @@ class mindshaftScanner {
         layerSegment thisSegment = segmentsKnown.get(ID);
         if (thisSegment == null) {
             requestedsegments.add(new requestID(ID, distFactor, true));
-        } else if( thisSegment.stale == true) {
+        } else if (thisSegment.stale == true) {
             requestedsegments.add(new requestID(ID, distFactor, false));
         } else {
-            if (distFactor < 3 ) {
+            if (distFactor < 3) {
                 distFactor = 0;
             }
-            if(thisSegment.stale == false && thisSegment.expiration - distFactor <= now ) {
-                if(distFactor == 0) {
+            if (thisSegment.stale == false && thisSegment.expiration - distFactor <= now) {
+                if (distFactor == 0) {
                     segmentsKnown.remove(ID);
                     thisSegment = addLayerSegment(world, ID);
                 } else {
@@ -320,9 +318,9 @@ class mindshaftScanner {
     }
 
     public void rasterizeLayers(World world, PlayerEntity player, mindshaftRenderer renderer, zoomState zoom) {
-        if( currentTick == 0 ) {
-            pX = (int)(player.posX) >> 4;
-            pZ = (int)(player.posZ) >> 4;
+        if (currentTick == 0) {
+            pX = (int) (player.posX) >> 4;
+            pZ = (int) (player.posZ) >> 4;
         }
 
         int pcX = (pX) - 8;
@@ -340,10 +338,9 @@ class mindshaftScanner {
 
         int segmentrate = (int) Math.ceil(256.0 / mindshaftConfig.refreshdelay);
         int segmentcount = segmentrate * currentTick;
-        
 
-        for(int i = segmentcount; i < segmentcount + segmentrate; i++) {
-            if( i >= 256) {
+        for (int i = segmentcount; i < segmentcount + segmentrate; i++) {
+            if (i >= 256) {
                 break;
             }
             int cX = i / 16;
@@ -357,7 +354,7 @@ class mindshaftScanner {
 
             dX = (cX - 8) * (cX - 8);
             dZ = (cZ - 8) * (cZ - 8);
-            distFactor = 256 - (( dX + dZ ) << 1 );
+            distFactor = 256 - ((dX + dZ) << 1);
 
             segmentID ID = new segmentID(currentDim, cX + pcX, pY, cZ + pcZ);
             layerSegment thisSegment = getLayerSegment(world, ID, distFactor);
@@ -367,7 +364,7 @@ class mindshaftScanner {
             copyLayer(renderer, thisSegment, cX, cZ);
         }
 
-        if( currentTick++ >= mindshaftConfig.refreshdelay ) {
+        if (currentTick++ >= mindshaftConfig.refreshdelay) {
             renderer.refreshTexture();
             renderer.updatePos(pX, pZ);
             currentTick = 0;
@@ -377,7 +374,7 @@ class mindshaftScanner {
 
     public void processChunks(World world, double y) {
         int pY = (int) (y - fudgeY);
-        now = world.getGameTime();  //getTotalWorldTime();
+        now = world.getGameTime(); // getTotalWorldTime();
         currentDim = world.getDimension().getType().getId();
 
         if (!requestedsegments.isEmpty()) {
@@ -386,10 +383,10 @@ class mindshaftScanner {
             while (itr.hasNext() && cacheCount++ <= mindshaftConfig.chunkrate) {
                 requestID ID = itr.next();
                 itr.remove();
-                if(Math.abs(pY - ID.y) > 2 || (Math.abs(pX - ID.x) > 12 ) || (Math.abs(pZ - ID.z) > 12 ) ) {
+                if (Math.abs(pY - ID.y) > 2 || (Math.abs(pX - ID.x) > 12) || (Math.abs(pZ - ID.z) > 12)) {
                     continue;
                 }
-                if(segmentsKnown.containsKey(ID)) {
+                if (segmentsKnown.containsKey(ID)) {
                     segmentsKnown.remove(ID);
                 }
                 addLayerSegment(world, ID);
@@ -404,7 +401,7 @@ class mindshaftScanner {
                 layerSegment segment = entry.getValue();
                 if (segment.stale && segment.expiration <= now) {
                     itr.remove();
-                } else if( segment.expiration <= now ) {
+                } else if (segment.expiration <= now) {
                     segment.markStale();
                 }
             }
