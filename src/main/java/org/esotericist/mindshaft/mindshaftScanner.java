@@ -55,7 +55,7 @@ class mindshaftScanner {
 
     // maximum time in ticks before a segment is forcibly removed
     // actual forced expiration time is forcedExpiry + expiry
-    private static final int forcedExpiry = 2000;
+    // private static final int forcedExpiry = 2000;
 
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
@@ -143,7 +143,7 @@ class mindshaftScanner {
 
         public void markStale() {
             stale = true;
-            expiration = now + forcedExpiry;
+            expiration = now + mindshaftConfig.forcedExpiry;
         }
     }
 

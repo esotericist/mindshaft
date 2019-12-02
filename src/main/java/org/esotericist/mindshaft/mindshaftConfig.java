@@ -121,6 +121,9 @@ public class mindshaftConfig {
     // @Name("Fullscreen cursor opacity")
     public static int cursoropacityfs = 100;
 
+
+    public static int forcedExpiry = 8000;
+
     public static double getMapsize() {
         return (double) mapwidth / 100.0;
     }
