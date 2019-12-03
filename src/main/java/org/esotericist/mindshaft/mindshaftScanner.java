@@ -1,13 +1,9 @@
 package org.esotericist.mindshaft;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-// import net.minecraft.block.state.IBlockState;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
-//import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 
@@ -37,9 +33,6 @@ class mindshaftScanner {
     private static int pX;
     private static int pZ;
 
-    // fudge for player's current Y level
-    private static final double fudgeY = 17 / 32D;
-
     // maximum time in ticks before a segment is normally considered stale
     // actual expiry can be sooner due to distance factors
     // e.g. chunks closest to center will be expiry - 256
@@ -59,8 +52,6 @@ class mindshaftScanner {
 
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
-
-    // private layerSegment emptyLayer = new layerSegment(defaultColor);
 
     static class segmentID {
         int dimension, x, y, z;
@@ -186,11 +177,15 @@ class mindshaftScanner {
 
         int dist;
 
-        int segX = ID.x * 16;
-        int segY = ID.y;
-        int segZ = ID.z * 16;
+        // segment X and Z contains chunk coordinates
+        // we need to translate to worldspace for our operations here
+        int colX = (ID.x * 16) + x;
+        int colZ = (ID.z * 16) + z;
+        int colY = ID.y;
 
+        // 32 block range, with the player in the center two blocks.
         for (int y = -15; y < 17; y++) {
+            int blockY = colY + y;
             int intensity = 0;
             dist = Math.abs(y);
 
@@ -199,31 +194,32 @@ class mindshaftScanner {
             boolean intangible = false;
             boolean empty = false;
 
-            if (y + segY > 255) {
+            if (blockY > 255) {
                 intangible = false;
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if (y + segY >= 0) {
+            } else if (blockY >= 0) {
 
-                BlockPos pos = new BlockPos(segX + x, segY + y, segZ + z);
+                BlockPos pos = new BlockPos(colX, blockY, colZ);
 
                 IForgeBlockState iState = world.getBlockState(pos);
-                BlockState bState = iState.getBlockState(); // .getBlock();
-                Block block = bState.getBlock();
+                BlockState bState = iState.getBlockState();
 
                 if (!bState.isSolid()) {
                     solid = false;
                     lit = isLit(world, pos);
                     if (bState.getCollisionShape(world, pos).isEmpty()) {
                         intangible = true;
-                        if (block.isAir(block.getDefaultState(), world, pos)) {
+                        if (bState.isAir(world, pos)) {
                             empty = true;
                         }
                     }
                 }
             }
 
+            // the block volumes a standing player would occupy (both legs and head)
+            // are both considered a distance of 0. all other distances are relative that.
             if (y > 1) {
                 dist--;
             }
@@ -317,15 +313,15 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(World world, PlayerEntity player, mindshaftRenderer renderer, zoomState zoom) {
+    public void rasterizeLayers(World world, BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
         if (currentTick == 0) {
-            pX = (int) (player.posX) >> 4;
-            pZ = (int) (player.posZ) >> 4;
+            pX = pPos.getX() >> 4;
+            pZ = pPos.getZ() >> 4;
         }
+        int pY = pPos.getY();
 
         int pcX = (pX) - 8;
         int pcZ = (pZ) - 8;
-        int pY = (int) (player.posY - fudgeY);
 
         int dX = 0;
         int dZ = 0;
@@ -372,8 +368,9 @@ class mindshaftScanner {
 
     }
 
-    public void processChunks(World world, double y) {
-        int pY = (int) (y - fudgeY);
+    public void processChunks(World world, int pY) {
+
+        //
         now = world.getGameTime(); // getTotalWorldTime();
         currentDim = world.getDimension().getType().getId();
 

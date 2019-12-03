@@ -3,6 +3,7 @@ package org.esotericist.mindshaft;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -43,6 +44,7 @@ public class Mindshaft {
 
     private static mindshaftScanner scanner = new mindshaftScanner();
 
+
     public Mindshaft() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
     }
@@ -81,9 +83,15 @@ public class Mindshaft {
             // input.processKeys(zoom);
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
+                
+                // this adjustment allows the player to be considered at the 'same' Y value
+                // whether on a normal block, on farmland (so slightly below normal), or
+                // on a slab (half a block above normal)
+                int pY = (int) (Math.ceil(player.posY - (17 / 32D)));
+                BlockPos pPos = new BlockPos(player.posX, pY, player.posZ);
 
-                scanner.processChunks(player.getEntityWorld(), player.posY);
-                scanner.rasterizeLayers(world, player, renderer, zoom);
+                scanner.processChunks(player.getEntityWorld(), pY);
+                scanner.rasterizeLayers(world, pPos, renderer, zoom);
                 // scanner.processBlocks(world, player, renderer, zoom);
             }
         }
