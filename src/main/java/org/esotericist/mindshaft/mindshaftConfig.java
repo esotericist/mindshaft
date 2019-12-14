@@ -23,22 +23,22 @@ public class mindshaftConfig {
             "otherwise the order they cyle through may not be as expected." })
     @RangeInt(min = 1, max = 7)
     @Name("Zoom level list")
-    public static int[] zoomlevels = { 5, 3, 1 };
+    public static int[] zoomlevels = { 5, 3, 2, 1 };
 
     @Config.Comment({ "Manually specify minimap zoom level without using in-game key bindings", "Default zoom levels:",
-            "0: 192 blocks across.", "1: 128 blocks across.", "2: 64 blocks across.", "3: 32 blocks across." ,
+            "0: 160 blocks across.", "1: 96 blocks across.", "2: 64 blocks across.", "3: 32 blocks across." ,
             "Minimap zoom level when adjusted with key bindings is also saved here."})
     @RangeInt(min = 0, max = 255)
     @Name("Current zoom level")
-    public static int zoom = 3;
+    public static int zoom = 2;
 
     @Config.Comment({ "Manually specify fullscreen map zoom level without using in-game key bindings",
-            "Default zoom levels:", "0: 192 blocks across.", "1: 128 blocks across.", "2: 64 blocks across.",
+            "Default zoom levels:", "0: 160 blocks across.", "1: 96 blocks across.", "2: 64 blocks across.",
             "3: 32 blocks across.",
             "Fullscreen map zoom level when adjusted with key bindings is also saved here." })
     @RangeInt(min = 0, max = 255)
     @Name("Current fullscreen zoom level")
-    public static int zoomfs = 3;
+    public static int zoomfs = 2;
 
     @Config.Comment({"Whether the zoom in/zoom out key bindings should wrap around.",
                      "e.g. when zooming in at the tightest zoom level, go to the widest zoom level."})
