@@ -31,3 +31,5 @@ deps
 *.db:encryptable
 
 *.db
+
+logs/
