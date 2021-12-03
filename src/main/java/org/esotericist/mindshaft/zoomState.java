@@ -9,9 +9,7 @@ class zoomState {
     private static zoomSpec[] zoomlist;
 
     public zoomSpec getZoomSpec() {
-        int currentzoom = fullscreen ? mindshaftConfig.zoomfs : mindshaftConfig.zoom;
-
-        return zoomlist[currentzoom];
+        return zoomlist[getZoom()];
     }
 
     public void initzooms() {
