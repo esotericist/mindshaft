@@ -3,7 +3,6 @@ package org.esotericist.mindshaft;
 import net.minecraft.block.BlockState;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 
@@ -162,8 +161,7 @@ class mindshaftScanner {
 
     private boolean isLit(World world, BlockPos pos) {
 
-        if (((world.getLightFor(LightType.BLOCK, pos) > 0)
-                || (world.getDimensionType().hasSkyLight()))) {
+        if (world.getLight(pos) > 0) {
             return true;
         }
         return false;
