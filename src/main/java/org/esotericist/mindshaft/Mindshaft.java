@@ -32,8 +32,6 @@ public class Mindshaft {
 
     private static PlayerEntity player;
 
-    public static mindshaftConfig config = new mindshaftConfig();
-
     private static mindshaftRenderer renderer = new mindshaftRenderer();
 
     private static inputHandler input;
@@ -59,8 +57,6 @@ public class Mindshaft {
 
         input = new inputHandler();
         MinecraftForge.EVENT_BUS.register(input);
-        zoom.initzooms();
-        // logger.info("setup");
         Minecraft.getInstance().enqueue(new assetinit());
 
     }
@@ -78,8 +74,6 @@ public class Mindshaft {
                 return;
             }
 
-            // input.processKeys(zoom);
-
             if (mindshaftConfig.enabled || zoom.fullscreen) {
                 
                 // this adjustment allows the player to be considered at the 'same' Y value
@@ -90,7 +84,6 @@ public class Mindshaft {
 
                 scanner.processChunks(player.getEntityWorld(), pY);
                 scanner.rasterizeLayers(world, pPos, renderer, zoom);
-                // scanner.processBlocks(world, player, renderer, zoom);
             }
         }
     }
@@ -100,35 +93,4 @@ public class Mindshaft {
         // logger.info("render");
         renderer.doRender(event, player, zoom);
     }
-
-    /*
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-
-        if (event.getModID().equals(Mindshaft.MODID)) {
-            // ConfigManager.sync(Mindshaft.MODID, Config.Type.INSTANCE);
-            zoom.initzooms();
-        }
-    }
-    */
-
-    /*
-     * @EventHandler public void preInit(FMLPreInitializationEvent event) { logger =
-     * event.getModLog();
-     * 
-     * }
-     */
-
-    /*
-     * @EventHandler public void init(FMLInitializationEvent event) {
-     * input.initBindings();
-     * 
-     * ConfigManager.sync(MODID, Config.Type.INSTANCE);
-     * 
-     * zoom.initzooms(); }
-     * 
-     * @EventHandler public void PostInit(FMLPostInitializationEvent event) {
-     * 
-     * renderer.initAssets(); }
-     */
 }
