@@ -113,7 +113,12 @@ public class mindshaftConfig {
     @Name("Fullscreen cursor opacity")
     public static int cursoropacityfs = 100;
 
-
+    @Config.Comment({ "time in ticks before a segment is forcibly removed.",
+            "setting this too low can cause performance issues.",
+            "setting this too high can increase memory load.",
+            "you probably don't need to change this." })
+    @RangeInt(min = 1500, max = 20000)
+    @Name("segment forced expiration time")
     public static int forcedExpiry = 8000;
 
     public static double getMapsize() {
