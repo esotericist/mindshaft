@@ -21,8 +21,11 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 
 @Mod(Mindshaft.MODID)
+@Mod.EventBusSubscriber(modid = Mindshaft.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Mindshaft {
     public static final String MODID = "mindshaft";
     public static final String NAME = "Mindshaft";
@@ -43,6 +46,7 @@ public class Mindshaft {
 
     public Mindshaft() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, mindshaftConfig.CLIENT_SPEC);
     }
 
     public static class assetinit implements Runnable {
@@ -51,10 +55,16 @@ public class Mindshaft {
         }
     }
 
+    static void bakeandzoom() {
+        mindshaftConfig.bakeConfig();
+        zoom.initzooms();
+    }
+
     public void setup(FMLClientSetupEvent event) {
 
+        logger.info("setup");
         MinecraftForge.EVENT_BUS.register(this);
-
+        bakeandzoom();
         input = new inputHandler();
         MinecraftForge.EVENT_BUS.register(input);
         Minecraft.getInstance().enqueue(new assetinit());
@@ -62,8 +72,43 @@ public class Mindshaft {
     }
 
     @SubscribeEvent
+	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent) {
+        ModConfig config = configEvent.getConfig();
+		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
+            //logger.info("config");
+            mindshaftConfig.dirtyconfig = true;
+        }
+	}
+
+    /*
+
+    @SubscribeEvent
+    public static void onLoad(final ModConfig.Loading configEvent) {
+        ModConfig config = configEvent.getConfig();
+		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
+            logger.info("load");
+            mindshaftConfig.dirtyconfig = true;
+        }
+    }
+
+    @SubscribeEvent
+    public static void onReload(final ModConfig.Reloading configEvent) {
+        ModConfig config = configEvent.getConfig();
+		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
+            logger.info("reload");
+            mindshaftConfig.dirtyconfig = true;
+        }
+    }
+    */
+
+    @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         // logger.info("tick");
+
+        if( mindshaftConfig.dirtyconfig == true ) {
+            bakeandzoom();
+            mindshaftConfig.dirtyconfig = false;
+        }
         if (event.phase == TickEvent.Phase.END) {
             // logger.info("tick interior");
             Minecraft mc = Minecraft.getInstance();
