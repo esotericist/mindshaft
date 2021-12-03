@@ -10,6 +10,7 @@ loaderVersion="[28,)" #mandatory (28 is current forge version)
 # A URL to refer people to when problems occur with this mod
 issueTrackerURL="http://https://github.com/esotericist/mindshaft/issues/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
+license="MIT License/Expat License"
 [[mods]] #mandatory
 # The modid of the mod
 modId="mindshaft" #mandatory

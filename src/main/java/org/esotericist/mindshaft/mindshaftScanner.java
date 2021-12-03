@@ -163,7 +163,7 @@ class mindshaftScanner {
     private boolean isLit(World world, BlockPos pos) {
 
         if (((world.getLightFor(LightType.BLOCK, pos) > 0)
-                || (world.dimension.isSurfaceWorld()) && (world.getLightFor(LightType.SKY, pos) > 0))) {
+                || (world.getDimensionType().hasSkyLight()))) {
             return true;
         }
         return false;
@@ -372,7 +372,8 @@ class mindshaftScanner {
 
         //
         now = world.getGameTime(); // getTotalWorldTime();
-        currentDim = world.getDimension().getType().getId();
+        currentDim = world.getDimensionKey().hashCode();
+        // getDimension().getType().getId();
 
         if (!requestedsegments.isEmpty()) {
             int cacheCount = 0;
