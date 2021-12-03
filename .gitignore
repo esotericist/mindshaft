@@ -27,3 +27,7 @@ deps
 .vscode/*
 
 .vscode/
+
+*.db:encryptable
+
+*.db
