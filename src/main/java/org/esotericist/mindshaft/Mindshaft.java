@@ -8,8 +8,6 @@ import net.minecraft.world.World;
 
 import net.minecraftforge.common.MinecraftForge;
 
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -87,8 +85,8 @@ public class Mindshaft {
                 // this adjustment allows the player to be considered at the 'same' Y value
                 // whether on a normal block, on farmland (so slightly below normal), or
                 // on a slab (half a block above normal)
-                int pY = (int) (Math.ceil(player.posY - (17 / 32D)));
-                BlockPos pPos = new BlockPos(player.posX, pY, player.posZ);
+                int pY = (int) (Math.ceil(player.getPosY() - (17 / 32D)));
+                BlockPos pPos = new BlockPos(player.getPosX(), pY, player.getPosZ());
 
                 scanner.processChunks(player.getEntityWorld(), pY);
                 scanner.rasterizeLayers(world, pPos, renderer, zoom);
@@ -103,6 +101,7 @@ public class Mindshaft {
         renderer.doRender(event, player, zoom);
     }
 
+    /*
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
 
@@ -111,6 +110,7 @@ public class Mindshaft {
             zoom.initzooms();
         }
     }
+    */
 
     /*
      * @EventHandler public void preInit(FMLPreInitializationEvent event) { logger =

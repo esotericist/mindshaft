@@ -1,6 +1,7 @@
 package org.esotericist.mindshaft;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -94,8 +95,8 @@ class mindshaftRenderer {
 
         textureManager.bindTexture(mapresource);
 
-        double offsetU = ((player.posX) - (lastX * 16)) * texelsize;
-        double offsetV = ((player.posZ) - (lastZ * 16)) * texelsize;
+        double offsetU = ((player.getPosX()) - (lastX * 16)) * texelsize;
+        double offsetV = ((player.getPosZ()) - (lastZ * 16)) * texelsize;
 
         // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
@@ -141,20 +142,20 @@ class mindshaftRenderer {
 
         zoomSpec currentzoom = zoom.getZoomSpec();
 
-        double minU = currentzoom.minU + offsetU; // 0.0;
-        double minV = currentzoom.minV + offsetV; // 0.0;
-        double maxU = currentzoom.maxU + offsetU; // 1.0;
-        double maxV = currentzoom.maxV + offsetV; // 1.0;
+        float minU = (float) (currentzoom.minU + offsetU); // 0.0;
+        float minV = (float) (currentzoom.minV + offsetV); // 0.0;
+        float maxU = (float) (currentzoom.maxU + offsetU); // 1.0;
+        float maxV = (float) (currentzoom.maxV + offsetV); // 1.0;
 
         // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" +
         // maxV);
 
-        GlStateManager.disableAlphaTest();
+        RenderSystem.disableAlphaTest();
         // GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         // //disableAlpha();
-        GlStateManager.disableBlend();
-        GlStateManager.clearCurrentColor(); // .resetColor();
-        GlStateManager.disableLighting();
+        RenderSystem.disableBlend();
+        RenderSystem.clearCurrentColor(); // .resetColor();
+        RenderSystem.disableLighting();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
@@ -166,21 +167,21 @@ class mindshaftRenderer {
 
         GlStateManager.enableBlend();
 
-        double cminU = 0.0;
-        double cminV = 0.0;
-        double cmaxU = 1.0;
-        double cmaxV = 1.0;
+        float cminU = 0.0f;
+        float cminV = 0.0f;
+        float cmaxU = 1.0f;
+        float cmaxV = 1.0f;
 
-        GlStateManager.pushMatrix();
+        RenderSystem.pushMatrix();
 
         // GlStateManager //.color(1f, 1f, 1f,
         // mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
         textureManager.bindTexture(playericon); // .bindTexture(playericon);
 
-        GlStateManager.enableAlphaTest();
+        RenderSystem.enableAlphaTest();
 
-        GlStateManager.translated(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
+        RenderSystem.translated(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
 
         double cminX = 0;
         double cminY = 0;
@@ -189,8 +190,8 @@ class mindshaftRenderer {
 
         double centeroffset = cursorsize / 16.0;
 
-        GlStateManager.rotated(180 + player.getRotationYawHead(), 0, 0, 1);
-        GlStateManager.translated(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
+        RenderSystem.rotatef(180 + player.getRotationYawHead(), 0, 0, 1);
+        RenderSystem.translated(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         renderer.pos(cminX, cmaxY, 0).tex(cminU, cmaxV).endVertex();
@@ -202,7 +203,7 @@ class mindshaftRenderer {
         // GlStateManager.color(1, 1, 1, 1);
         // GlStateManager.disableAlpha();
 
-        GlStateManager.popMatrix();
-        GlStateManager.disableBlend();
+        RenderSystem.popMatrix();
+        RenderSystem.disableBlend();
     }
 }
