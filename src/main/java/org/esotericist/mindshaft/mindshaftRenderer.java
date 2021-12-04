@@ -1,20 +1,20 @@
 package org.esotericist.mindshaft;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import com.mojang.math.Quaternion;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -87,27 +87,29 @@ class mindshaftRenderer {
 
     public static void enableAlpha( float alpha) {
 		RenderSystem.enableBlend();
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
 		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
 	public static void disableAlpha()
 	{
 		RenderSystem.disableBlend();
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 	}
     
-    public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {
+    public void doRender(RenderGameOverlayEvent.Post event, Player player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;
         }
 
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder renderer = tessellator.getBuilder();
-        MatrixStack stack = event.getMatrixStack();
+        PoseStack stack = event.getMatrixStack();
 
-        textureManager.bind(mapresource);
+        //textureManager.bind(mapresource);
+
+        RenderSystem.setShaderTexture(0, mapresource);
 
         double offsetU = ((player.getX()) - (lastX * 16)) * texelsize;
         double offsetV = ((player.getZ()) - (lastZ * 16)) * texelsize;
@@ -166,7 +168,7 @@ class mindshaftRenderer {
 
         disableAlpha();
 
-        renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        renderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         renderer.vertex(minX, maxY, 0).uv(minU, maxV).endVertex();
         renderer.vertex(maxX, maxY, 0).uv(maxU, maxV).endVertex();
@@ -177,15 +179,16 @@ class mindshaftRenderer {
 
         stack.pushPose();
 
-        textureManager.bind(playericon); // .bindTexture(playericon);
+        RenderSystem.setShaderTexture(0, playericon);
+        //textureManager.bind(playericon); // .bindTexture(playericon);
 
         enableAlpha(mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
         stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
-        Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getYHeadRot());
+        //Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getYHeadRot());
 
-        stack.mulPose(rotation);
+        stack.mulPose(Quaternion.fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
         ForgeIngameGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 

@@ -1,10 +1,8 @@
 package org.esotericist.mindshaft;
 
-import net.minecraft.block.BlockState;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.common.extensions.IForgeBlockState;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import java.lang.Math;
 import java.util.Map;
@@ -159,7 +157,7 @@ class mindshaftScanner {
         return Math.min(Math.max(value, min), max);
     }
 
-    private boolean isLit(World world, BlockPos pos) {
+    private boolean isLit(Level world, BlockPos pos) {
 
         if (world.getMaxLocalRawBrightness(pos) > 0) {
             return true;
@@ -167,7 +165,7 @@ class mindshaftScanner {
         return false;
     }
 
-    int processColumn(World world, segmentID ID, int x, int z) {
+    int processColumn(Level world, segmentID ID, int x, int z) {
         int color = defaultColor;
         int red = 0;
         int blue = 0;
@@ -192,24 +190,23 @@ class mindshaftScanner {
             boolean intangible = false;
             boolean empty = false;
 
-            if (blockY > 255) {
+            if (blockY > world.getMaxBuildHeight()) {
                 intangible = false;
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if (blockY >= 0) {
+            } else if (blockY >= world.getMinBuildHeight()) {
 
                 BlockPos pos = new BlockPos(colX, blockY, colZ);
 
-                IForgeBlockState iState = world.getBlockState(pos);
-                BlockState bState = iState.getBlockState();
+                BlockState bState = world.getBlockState(pos);
 
                 if (!bState.canOcclude()) {
                     solid = false;
                     lit = isLit(world, pos);
                     if (bState.getBlockSupportShape(world, pos).isEmpty()) {
                         intangible = true;
-                        if (bState.isAir(world, pos)) {
+                        if (bState.isAir()) {
                             empty = true;
                         }
                     }
@@ -256,7 +253,7 @@ class mindshaftScanner {
         return color;
     }
 
-    layerSegment processSegment(World world, segmentID ID) {
+    layerSegment processSegment(Level world, segmentID ID) {
         layerSegment segment = new layerSegment(defaultColor);
 
         for (int x = 0; x < 16; x++) {
@@ -270,7 +267,7 @@ class mindshaftScanner {
         return segment;
     }
 
-    layerSegment addLayerSegment(World world, segmentID ID) {
+    layerSegment addLayerSegment(Level world, segmentID ID) {
         layerSegment segment = processSegment(world, ID);
         segment.expiration = now + expiry + random.nextInt(expiryFudge);
         segmentsKnown.put(ID, segment);
@@ -279,7 +276,7 @@ class mindshaftScanner {
 
     }
 
-    layerSegment getLayerSegment(World world, segmentID ID, int distFactor) {
+    layerSegment getLayerSegment(Level world, segmentID ID, int distFactor) {
         layerSegment thisSegment = segmentsKnown.get(ID);
         if (thisSegment == null) {
             requestedsegments.add(new requestID(ID, distFactor, true));
@@ -311,7 +308,7 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(World world, BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
+    public void rasterizeLayers(Level world, BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
         if (currentTick == 0) {
             pX = pPos.getX() >> 4;
             pZ = pPos.getZ() >> 4;
@@ -366,7 +363,7 @@ class mindshaftScanner {
 
     }
 
-    public void processChunks(World world, int pY) {
+    public void processChunks(Level world, int pY) {
 
         //
         now = world.getGameTime(); // getTotalWorldTime();

@@ -1,10 +1,9 @@
 package org.esotericist.mindshaft;
 
 import net.minecraft.client.Minecraft;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import net.minecraftforge.common.MinecraftForge;
 
@@ -23,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 @Mod(Mindshaft.MODID)
 @Mod.EventBusSubscriber(modid = Mindshaft.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -33,7 +33,7 @@ public class Mindshaft {
 
     public static final Logger logger = LogManager.getLogger();
 
-    private static PlayerEntity player;
+    private static Player player;
 
     private static mindshaftRenderer renderer = new mindshaftRenderer();
 
@@ -72,7 +72,7 @@ public class Mindshaft {
     }
 
     @SubscribeEvent
-	public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent) {
+	public static void onModConfigEvent(final ModConfigEvent configEvent) {
         ModConfig config = configEvent.getConfig();
 		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
             //logger.info("config");
@@ -114,7 +114,7 @@ public class Mindshaft {
             Minecraft mc = Minecraft.getInstance();
 
             player = mc.player;
-            World world = mc.level;
+            Level world = mc.level;
             if (player == null) {
                 return;
             }

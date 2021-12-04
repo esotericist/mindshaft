@@ -1,7 +1,7 @@
 package org.esotericist.mindshaft;
 
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraft.client.KeyMapping;
+import net.minecraftforge.client.ClientRegistry;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -11,7 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 class inputHandler {
 
-    private static KeyBinding[] keyBindings;
+    private static KeyMapping[] keyBindings;
     private boolean[] pressed;
 
     @SubscribeEvent
@@ -72,20 +72,19 @@ class inputHandler {
     }
 
     public inputHandler() {
-        keyBindings = new KeyBinding[4];
+        keyBindings = new KeyMapping[4];
         pressed = new boolean[4];
-
-        keyBindings[0] = new KeyBinding("mindshaft.key.toggle.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_1),
+        keyBindings[0] = new KeyMapping("mindshaft.key.toggle.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_1),
                 "mindshaft.key.category");
-        keyBindings[1] = new KeyBinding("mindshaft.key.fullscreen.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_2),
+        keyBindings[1] = new KeyMapping("mindshaft.key.fullscreen.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_2),
                 "mindshaft.key.category");
-        keyBindings[2] = new KeyBinding("mindshaft.key.zoomin.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_6),
+        keyBindings[2] = new KeyMapping("mindshaft.key.zoomin.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_6),
                 "mindshaft.key.category");
-        keyBindings[3] = new KeyBinding("mindshaft.key.zoomout.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_3),
+        keyBindings[3] = new KeyMapping("mindshaft.key.zoomout.desc", GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_3),
                 "mindshaft.key.category");
 
         for (int i = 0; i < keyBindings.length; ++i) {
-            ClientRegistry.registerKeyBinding(keyBindings[i]);
+            ClientRegistry.registerKeyBinding(keyBindings[i] );
             pressed[i] = false;
         }
     }
