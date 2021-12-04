@@ -1,7 +1,8 @@
 package org.esotericist.mindshaft;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraftforge.client.gui.ForgeIngameGui;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -10,10 +11,10 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 import net.minecraft.client.Minecraft;
-
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
-
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -84,6 +85,18 @@ class mindshaftRenderer {
         refreshTexture();
     }
 
+    public static void enableAlpha( float alpha) {
+		RenderSystem.enableBlend();
+		RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+	public static void disableAlpha()
+	{
+		RenderSystem.disableBlend();
+		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+	}
+    
     public void doRender(RenderGameOverlayEvent.Post event, PlayerEntity player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
@@ -92,6 +105,7 @@ class mindshaftRenderer {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder renderer = tessellator.getBuffer();
+        MatrixStack stack = event.getMatrixStack();
 
         textureManager.bindTexture(mapresource);
 
@@ -150,12 +164,7 @@ class mindshaftRenderer {
         // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" +
         // maxV);
 
-        RenderSystem.disableAlphaTest();
-        // GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        // //disableAlpha();
-        RenderSystem.disableBlend();
-        RenderSystem.clearCurrentColor(); // .resetColor();
-        RenderSystem.disableLighting();
+        disableAlpha();
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
@@ -165,45 +174,22 @@ class mindshaftRenderer {
         renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
         tessellator.draw();
 
-        GlStateManager.enableBlend();
 
-        float cminU = 0.0f;
-        float cminV = 0.0f;
-        float cmaxU = 1.0f;
-        float cmaxV = 1.0f;
-
-        RenderSystem.pushMatrix();
-
-        // GlStateManager //.color(1f, 1f, 1f,
-        // mindshaftConfig.getCursorOpacity(zoom.fullscreen));
+        stack.push();
 
         textureManager.bindTexture(playericon); // .bindTexture(playericon);
 
-        RenderSystem.enableAlphaTest();
+        enableAlpha(mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
-        RenderSystem.translated(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
-
-        double cminX = 0;
-        double cminY = 0;
-        double cmaxX = cursorsize;
-        double cmaxY = cursorsize;
-
+        stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
+        Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getRotationYawHead());
 
-        RenderSystem.rotatef(180 + player.getRotationYawHead(), 0, 0, 1);
-        RenderSystem.translated(-((cmaxX - centeroffset) / 2), -((cmaxY - centeroffset) / 2), 0);
+        stack.rotate(rotation);
+        stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
+        ForgeIngameGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
-        renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        renderer.pos(cminX, cmaxY, 0).tex(cminU, cmaxV).endVertex();
-        renderer.pos(cmaxX, cmaxY, 0).tex(cmaxU, cmaxV).endVertex();
-        renderer.pos(cmaxX, cminY, 0).tex(cmaxU, cminV).endVertex();
-        renderer.pos(cminX, cminY, 0).tex(cminU, cminV).endVertex();
-        tessellator.draw();
-
-        // GlStateManager.color(1, 1, 1, 1);
-        // GlStateManager.disableAlpha();
-
-        RenderSystem.popMatrix();
-        RenderSystem.disableBlend();
+        stack.pop();
+        disableAlpha();
     }
 }
