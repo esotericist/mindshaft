@@ -67,7 +67,7 @@ public class Mindshaft {
         bakeandzoom();
         input = new inputHandler();
         MinecraftForge.EVENT_BUS.register(input);
-        Minecraft.getInstance().enqueue(new assetinit());
+        Minecraft.getInstance().tell(new assetinit());
 
     }
 
@@ -114,7 +114,7 @@ public class Mindshaft {
             Minecraft mc = Minecraft.getInstance();
 
             player = mc.player;
-            World world = mc.world;
+            World world = mc.level;
             if (player == null) {
                 return;
             }
@@ -124,10 +124,10 @@ public class Mindshaft {
                 // this adjustment allows the player to be considered at the 'same' Y value
                 // whether on a normal block, on farmland (so slightly below normal), or
                 // on a slab (half a block above normal)
-                int pY = (int) (Math.ceil(player.getPosY() - (17 / 32D)));
-                BlockPos pPos = new BlockPos(player.getPosX(), pY, player.getPosZ());
+                int pY = (int) (Math.ceil(player.getY() - (17 / 32D)));
+                BlockPos pPos = new BlockPos(player.getX(), pY, player.getZ());
 
-                scanner.processChunks(player.getEntityWorld(), pY);
+                scanner.processChunks(player.getCommandSenderWorld(), pY);
                 scanner.rasterizeLayers(world, pPos, renderer, zoom);
             }
         }

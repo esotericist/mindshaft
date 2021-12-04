@@ -42,11 +42,11 @@ class mindshaftRenderer {
     }
 
     public void refreshTexture() {
-        mapTexture.updateDynamicTexture();
+        mapTexture.upload();
     }
 
     public void setTextureValue(int x, int y, int val) {
-        mapTexture.getTextureData().setPixelRGBA(x, y, val);
+        mapTexture.getPixels().setPixelRGBA(x, y, val);
     }
 
     /*
@@ -58,7 +58,7 @@ class mindshaftRenderer {
      */
 
     public int getTextureValue(int x, int y) {
-        return mapTexture.getTextureData().getPixelRGBA(x, y);
+        return mapTexture.getPixels().getPixelRGBA(x, y);
         // return getTextureValue(x + (y * 256));
     }
 
@@ -74,7 +74,7 @@ class mindshaftRenderer {
         mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
         // nativeTexture = mapTexture.getTextureData();
 
-        mapresource = textureManager.getDynamicTextureLocation("mindshafttexture", mapTexture);
+        mapresource = textureManager.register("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
         for (int i = 0; i < texturesize; i++) {
@@ -104,18 +104,18 @@ class mindshaftRenderer {
         }
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder renderer = tessellator.getBuffer();
+        BufferBuilder renderer = tessellator.getBuilder();
         MatrixStack stack = event.getMatrixStack();
 
-        textureManager.bindTexture(mapresource);
+        textureManager.bind(mapresource);
 
-        double offsetU = ((player.getPosX()) - (lastX * 16)) * texelsize;
-        double offsetV = ((player.getPosZ()) - (lastZ * 16)) * texelsize;
+        double offsetU = ((player.getX()) - (lastX * 16)) * texelsize;
+        double offsetV = ((player.getZ()) - (lastZ * 16)) * texelsize;
 
         // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
-        double screenX = event.getWindow().getScaledWidth();
-        double screenY = event.getWindow().getScaledHeight();
+        double screenX = event.getWindow().getGuiScaledWidth();
+        double screenY = event.getWindow().getGuiScaledHeight();
 
         double mapsize = mindshaftConfig.getMapsize() * screenY;
         double fsmapsize = mindshaftConfig.getFSMapsize() * screenY;
@@ -168,28 +168,28 @@ class mindshaftRenderer {
 
         renderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
-        renderer.pos(minX, maxY, 0).tex(minU, maxV).endVertex();
-        renderer.pos(maxX, maxY, 0).tex(maxU, maxV).endVertex();
-        renderer.pos(maxX, minY, 0).tex(maxU, minV).endVertex();
-        renderer.pos(minX, minY, 0).tex(minU, minV).endVertex();
-        tessellator.draw();
+        renderer.vertex(minX, maxY, 0).uv(minU, maxV).endVertex();
+        renderer.vertex(maxX, maxY, 0).uv(maxU, maxV).endVertex();
+        renderer.vertex(maxX, minY, 0).uv(maxU, minV).endVertex();
+        renderer.vertex(minX, minY, 0).uv(minU, minV).endVertex();
+        tessellator.end();
 
 
-        stack.push();
+        stack.pushPose();
 
-        textureManager.bindTexture(playericon); // .bindTexture(playericon);
+        textureManager.bind(playericon); // .bindTexture(playericon);
 
         enableAlpha(mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
         stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
-        Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getRotationYawHead());
+        Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getYHeadRot());
 
-        stack.rotate(rotation);
+        stack.mulPose(rotation);
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
         ForgeIngameGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
-        stack.pop();
+        stack.popPose();
         disableAlpha();
     }
 }

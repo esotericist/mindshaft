@@ -161,7 +161,7 @@ class mindshaftScanner {
 
     private boolean isLit(World world, BlockPos pos) {
 
-        if (world.getLight(pos) > 0) {
+        if (world.getMaxLocalRawBrightness(pos) > 0) {
             return true;
         }
         return false;
@@ -204,10 +204,10 @@ class mindshaftScanner {
                 IForgeBlockState iState = world.getBlockState(pos);
                 BlockState bState = iState.getBlockState();
 
-                if (!bState.isSolid()) {
+                if (!bState.canOcclude()) {
                     solid = false;
                     lit = isLit(world, pos);
-                    if (bState.getCollisionShape(world, pos).isEmpty()) {
+                    if (bState.getBlockSupportShape(world, pos).isEmpty()) {
                         intangible = true;
                         if (bState.isAir(world, pos)) {
                             empty = true;
@@ -370,7 +370,7 @@ class mindshaftScanner {
 
         //
         now = world.getGameTime(); // getTotalWorldTime();
-        currentDim = world.getDimensionKey().hashCode();
+        currentDim = world.dimension().hashCode();
         // getDimension().getType().getId();
 
         if (!requestedsegments.isEmpty()) {

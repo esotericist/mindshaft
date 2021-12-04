@@ -18,14 +18,14 @@ class inputHandler {
     public void onKeyInput(InputEvent.KeyInputEvent event) {
 
         Minecraft mc = Minecraft.getInstance();
-        if (!mc.isGameFocused()) {
+        if (!mc.isWindowActive()) {
             return;
         }
 
         zoomState zoom = Mindshaft.zoom;
 
         // binding 0: enable/disable toggle
-        if (keyBindings[0].isKeyDown() && !pressed[0]) {
+        if (keyBindings[0].isDown() && !pressed[0]) {
             if (mindshaftConfig.enabled) {
                 mindshaftConfig.setEnabled(false);
             } else {
@@ -33,39 +33,39 @@ class inputHandler {
             }
             pressed[0] = true;
         }
-        if (!keyBindings[0].isKeyDown() && pressed[0]) {
+        if (!keyBindings[0].isDown() && pressed[0]) {
             pressed[0] = false;
         }
 
         // binding 1: fullscreen toggle
         // this doesn't have a config entry because it isn't meant to be persistent
         // across sessions.
-        if (keyBindings[1].isKeyDown() && !pressed[1]) {
+        if (keyBindings[1].isDown() && !pressed[1]) {
             if (zoom.fullscreen == false) {
                 zoom.fullscreen = true;
             } else {
                 zoom.fullscreen = false;
             }
         }
-        if (!keyBindings[1].isKeyDown() && pressed[1]) {
+        if (!keyBindings[1].isDown() && pressed[1]) {
             pressed[1] = false;
         }
 
         // binding 2: zoom in
-        if (keyBindings[2].isKeyDown() && !pressed[2]) {
+        if (keyBindings[2].isDown() && !pressed[2]) {
             zoom.nextZoom();
             pressed[2] = true;
         }
-        if (!keyBindings[2].isKeyDown() && pressed[2]) {
+        if (!keyBindings[2].isDown() && pressed[2]) {
             pressed[2] = false;
         }
 
         // binding 3: zoom out
-        if (keyBindings[3].isKeyDown() && !pressed[3]) {
+        if (keyBindings[3].isDown() && !pressed[3]) {
             zoom.prevZoom();
             pressed[3] = true;
         }
-        if (!keyBindings[3].isKeyDown() && pressed[3]) {
+        if (!keyBindings[3].isDown() && pressed[3]) {
             pressed[3] = false;
         }
 
