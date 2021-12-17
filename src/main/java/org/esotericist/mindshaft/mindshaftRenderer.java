@@ -7,6 +7,7 @@ import net.minecraftforge.client.gui.ForgeIngameGui;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -91,11 +92,6 @@ class mindshaftRenderer {
 		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 
-	public static void disableAlpha()
-	{
-		RenderSystem.disableBlend();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-	}
     
     public void doRender(RenderGameOverlayEvent.Post event, Player player, zoomState zoom) {
 
@@ -107,14 +103,15 @@ class mindshaftRenderer {
         BufferBuilder renderer = tessellator.getBuilder();
         PoseStack stack = event.getMatrixStack();
 
-        //textureManager.bind(mapresource);
+        stack.pushPose();
 
+		RenderSystem.disableBlend();
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, mapresource);
 
         double offsetU = ((player.getX()) - (lastX * 16)) * texelsize;
         double offsetV = ((player.getZ()) - (lastZ * 16)) * texelsize;
-
-        // Mindshaft.logger.info("U " + offsetU + ", V " + offsetV);
 
         double screenX = event.getWindow().getGuiScaledWidth();
         double screenY = event.getWindow().getGuiScaledHeight();
@@ -166,8 +163,6 @@ class mindshaftRenderer {
         // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" +
         // maxV);
 
-        disableAlpha();
-
         renderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         renderer.vertex(minX, maxY, 0).uv(minU, maxV).endVertex();
@@ -177,12 +172,14 @@ class mindshaftRenderer {
         tessellator.end();
 
 
+        stack.popPose();
         stack.pushPose();
 
+		RenderSystem.enableBlend();
+		RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, mindshaftConfig.getCursorOpacity(zoom.fullscreen));
         RenderSystem.setShaderTexture(0, playericon);
-        //textureManager.bind(playericon); // .bindTexture(playericon);
-
-        enableAlpha(mindshaftConfig.getCursorOpacity(zoom.fullscreen));
 
         stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
@@ -193,6 +190,5 @@ class mindshaftRenderer {
         ForgeIngameGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
         stack.popPose();
-        disableAlpha();
     }
 }
