@@ -1,9 +1,6 @@
 package org.esotericist.mindshaft;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -31,9 +28,6 @@ class mindshaftScanner {
     private static int pX;
     private static int pZ;
 
-    // fudge for player's current Y level
-    private static final double fudgeY = 17 / 32D;
-
     // maximum time in ticks before a segment is normally considered stale
     // actual expiry can be sooner due to distance factors
     // e.g. chunks closest to center will be expiry - 256
@@ -47,14 +41,8 @@ class mindshaftScanner {
     // random fudge of 20 == ~ 50% chance adjacent segment expires next tick
     private static final int expiryFudge = 20;
 
-    // maximum time in ticks before a segment is forcibly removed
-    // actual forced expiration time is forcedExpiry + expiry
-    // private static final int forcedExpiry = 2000;
-
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
-
-    // private layerSegment emptyLayer = new layerSegment(defaultColor);
 
     static class segmentID {
         int dimension, x, y, z;
@@ -95,22 +83,22 @@ class mindshaftScanner {
 
         public int compareTo(requestID other) {
             int c = 0;
-            if( this.isNew && !other.isNew ) {
+            if (this.isNew && !other.isNew) {
                 c = -1;
-            } else if( !this.isNew && other.isNew) {
+            } else if (!this.isNew && other.isNew) {
                 c = 1;
             } else {
                 // larger values are 'closer' due to other implementation details
                 // so the order of this comparison is inverted relative others
                 c = other.dist - this.dist;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.x - other.x;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.z - other.z;
             }
-            if( c == 0 ) {
+            if (c == 0) {
                 c = this.y - other.y;
             }
             return c;
@@ -140,7 +128,6 @@ class mindshaftScanner {
             expiration = now + mindshaftConfig.forcedExpiry;
         }
     }
-
 
     static class segmentCache extends LinkedHashMap<segmentID, layerSegment> {
         protected boolean removeEldestEntry(Map.Entry<segmentID, layerSegment> eldest) {
@@ -173,19 +160,47 @@ class mindshaftScanner {
         return false;
     }
 
+    private boolean isTransparent(World world, BlockPos pos) {
+        return !(world.getBlockState(pos).isOpaqueCube());
+    }
+
+    private boolean isIntangible(World world, BlockPos pos) {
+        return (world.getBlockState(pos).getCollisionBoundingBox(world, pos) == null);
+    }
+
+    private boolean isAir(World world, BlockPos pos) {
+        IBlockState bState = world.getBlockState(pos);
+        return bState.getBlock().isAir(bState, world, pos);
+    }
+
+    private int worldMin(World world) {
+        return 0;
+    }
+
+    private int worldMax(World world) {
+        return 255;
+    }
+
+    private int coloroutput(int red, int green, int blue) {
+        return clamp(red, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(blue, 0, 255);
+    }
+
     int processColumn(World world, segmentID ID, int x, int z) {
-        int color = defaultColor;
         int red = 0;
         int blue = 0;
         int green = 0x22;
 
         int dist;
 
-        int segX = ID.x * 16;
-        int segY = ID.y;
-        int segZ = ID.z * 16;
+        // segment X and Z contains chunk coordinates
+        // we need to translate to worldspace for our operations here
+        int colX = (ID.x * 16) + x;
+        int colZ = (ID.z * 16) + z;
+        int colY = ID.y;
 
+        // 32 block range, with the player in the center two blocks.
         for (int y = -15; y < 17; y++) {
+            int blockY = colY + y;
             int intensity = 0;
             dist = Math.abs(y);
 
@@ -194,32 +209,29 @@ class mindshaftScanner {
             boolean intangible = false;
             boolean empty = false;
 
-            if (y + segY > 255) {
+            if (blockY > worldMax(world)) {
                 intangible = false;
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if( y + segY >= 0 ) {
+            } else if (blockY >= worldMin(world)) {
 
-                BlockPos pos = new BlockPos(segX + x, segY + y, segZ + z);
+                BlockPos pos = new BlockPos(colX, blockY, colZ);
 
-                IBlockState state = world.getBlockState(pos);
-                Block blockID = state.getBlock();
                 lit = isLit(world, pos);
-    
-                if (state.isOpaqueCube() != true) {
+                if (isTransparent(world, pos)) {
                     solid = false;
-    
-                    if (state.getCollisionBoundingBox(world, pos) == null) {
+                    if (isIntangible(world, pos)) {
                         intangible = true;
-    
-                        if (blockID.isAir(state, world, pos)) {
+                        if (isAir(world, pos)) {
                             empty = true;
                         }
                     }
                 }
             }
 
+            // the block volumes a standing player would occupy (both legs and head)
+            // are both considered a distance of 0. all other distances are relative that.
             if (y > 1) {
                 dist--;
             }
@@ -254,8 +266,7 @@ class mindshaftScanner {
             }
         }
 
-        color = clamp(red, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(blue, 0, 255);
-        return color;
+        return coloroutput(red, green, blue);
     }
 
     layerSegment processSegment(World world, segmentID ID) {
@@ -285,14 +296,14 @@ class mindshaftScanner {
         layerSegment thisSegment = segmentsKnown.get(ID);
         if (thisSegment == null) {
             requestedsegments.add(new requestID(ID, distFactor, true));
-        } else if( thisSegment.stale == true) {
+        } else if (thisSegment.stale == true) {
             requestedsegments.add(new requestID(ID, distFactor, false));
         } else {
-            if (distFactor < 3 ) {
+            if (distFactor < 3) {
                 distFactor = 0;
             }
-            if(thisSegment.stale == false && thisSegment.expiration - distFactor <= now ) {
-                if(distFactor == 0) {
+            if (thisSegment.stale == false && thisSegment.expiration - distFactor <= now) {
+                if (distFactor == 0) {
                     segmentsKnown.remove(ID);
                     thisSegment = addLayerSegment(world, ID);
                 } else {
@@ -313,15 +324,15 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(World world, EntityPlayer player, mindshaftRenderer renderer, zoomState zoom) {
-        if( currentTick == 0 ) {
-            pX = (int)(player.posX) >> 4;
-            pZ = (int)(player.posZ) >> 4;
+    public void rasterizeLayers(World world, BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
+        if (currentTick == 0) {
+            pX = pPos.getX() >> 4;
+            pZ = pPos.getZ() >> 4;
         }
+        int pY = pPos.getY();
 
         int pcX = (pX) - 8;
         int pcZ = (pZ) - 8;
-        int pY = (int) (player.posY - fudgeY);
 
         int dX = 0;
         int dZ = 0;
@@ -334,10 +345,9 @@ class mindshaftScanner {
 
         int segmentrate = (int) Math.ceil(256.0 / mindshaftConfig.refreshdelay);
         int segmentcount = segmentrate * currentTick;
-        
 
-        for(int i = segmentcount; i < segmentcount + segmentrate; i++) {
-            if( i >= 256) {
+        for (int i = segmentcount; i < segmentcount + segmentrate; i++) {
+            if (i >= 256) {
                 break;
             }
             int cX = i / 16;
@@ -351,7 +361,7 @@ class mindshaftScanner {
 
             dX = (cX - 8) * (cX - 8);
             dZ = (cZ - 8) * (cZ - 8);
-            distFactor = 256 - (( dX + dZ ) << 1 );
+            distFactor = 256 - ((dX + dZ) << 1);
 
             segmentID ID = new segmentID(currentDim, cX + pcX, pY, cZ + pcZ);
             layerSegment thisSegment = getLayerSegment(world, ID, distFactor);
@@ -361,7 +371,7 @@ class mindshaftScanner {
             copyLayer(renderer, thisSegment, cX, cZ);
         }
 
-        if( currentTick++ >= mindshaftConfig.refreshdelay ) {
+        if (currentTick++ >= mindshaftConfig.refreshdelay) {
             renderer.refreshTexture();
             renderer.updatePos(pX, pZ);
             currentTick = 0;
@@ -369,20 +379,21 @@ class mindshaftScanner {
 
     }
 
-    public void processChunks(World world, double y) {
-        int pY = (int) (y - fudgeY);
+    public void processChunks(World world, int pY) {
+
         now = world.getTotalWorldTime();
         currentDim = world.provider.getDimension();
+
         if (!requestedsegments.isEmpty()) {
             int cacheCount = 0;
             Iterator<requestID> itr = requestedsegments.iterator();
             while (itr.hasNext() && cacheCount++ <= mindshaftConfig.chunkrate) {
                 requestID ID = itr.next();
                 itr.remove();
-                if(Math.abs(pY - ID.y) > 2 || (Math.abs(pX - ID.x) > 12 ) || (Math.abs(pZ - ID.z) > 12 ) ) {
+                if (Math.abs(pY - ID.y) > 2 || (Math.abs(pX - ID.x) > 12) || (Math.abs(pZ - ID.z) > 12)) {
                     continue;
                 }
-                if(segmentsKnown.containsKey(ID)) {
+                if (segmentsKnown.containsKey(ID)) {
                     segmentsKnown.remove(ID);
                 }
                 addLayerSegment(world, ID);
@@ -397,7 +408,7 @@ class mindshaftScanner {
                 layerSegment segment = entry.getValue();
                 if (segment.stale && segment.expiration <= now) {
                     itr.remove();
-                } else if( segment.expiration <= now ) {
+                } else if (segment.expiration <= now) {
                     segment.markStale();
                 }
             }

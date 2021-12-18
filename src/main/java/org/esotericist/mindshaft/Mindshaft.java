@@ -1,8 +1,8 @@
 package org.esotericist.mindshaft;
 
 import net.minecraft.client.Minecraft;
-
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import net.minecraftforge.common.config.Config;
@@ -55,9 +55,14 @@ public class Mindshaft {
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
 
-                scanner.processChunks(player.getEntityWorld(), player.posY);
-                scanner.rasterizeLayers(world, player, renderer, zoom);
-                //scanner.processBlocks(world, player, renderer, zoom);
+                // this adjustment allows the player to be considered at the 'same' Y value
+                // whether on a normal block, on farmland (so slightly below normal), or
+                // on a slab (half a block above normal)
+                int pY = (int) (Math.ceil(player.posY - (17 / 32D)));
+                BlockPos pPos = new BlockPos(player.posX, pY, player.posZ);
+
+                scanner.processChunks(player.getEntityWorld(), pY);
+                scanner.rasterizeLayers(world, pPos, renderer, zoom);
             }
         }
     }

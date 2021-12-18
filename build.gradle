@@ -11,9 +11,12 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "0.7-1.12.2"
+ext.configFile = file('build.properties')
+ext.config = parseConfig(configFile)
+
+version = "${config.version}-${config.mc_version}"
 group = "org.esotericist" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "mindshaft"
+archivesBaseName = config.mod_name
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -55,6 +58,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+}
+
+def parseConfig(File config) {
+    config.withReader {
+        def prop = new Properties()
+        prop.load(it)
+        return (new ConfigSlurper().parse(prop))
+    }
 }
 
 processResources {
