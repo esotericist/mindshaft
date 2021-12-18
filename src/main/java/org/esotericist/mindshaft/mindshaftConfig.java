@@ -5,8 +5,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 
-//import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 @Mod.EventBusSubscriber(modid = Mindshaft.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class mindshaftConfig {
@@ -61,7 +59,6 @@ public class mindshaftConfig {
     public static int forcedExpiry = 8000;
 
     public static void bakeConfig() {
-        // Mindshaft.logger.info("bake");
         enabled = v_enabled.get();
         zoom = v_zoom.get();
         zoomfs = v_zoomfs.get();

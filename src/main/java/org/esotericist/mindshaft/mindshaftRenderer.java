@@ -50,17 +50,8 @@ class mindshaftRenderer {
         mapTexture.getPixels().setPixelRGBA(x, y, val);
     }
 
-    /*
-     * public int[] getTextureData() { return mapTextureData; }
-     */
-
-    /*
-     * public int getTextureValue(int pos) { return mapTextureData[pos]; }
-     */
-
     public int getTextureValue(int x, int y) {
         return mapTexture.getPixels().getPixelRGBA(x, y);
-        // return getTextureValue(x + (y * 256));
     }
 
     public void updatePos(int x, int z) {
@@ -72,9 +63,7 @@ class mindshaftRenderer {
 
         textureManager = Minecraft.getInstance().getTextureManager();
 
-        mapTexture = new DynamicTexture(texturesize, texturesize, true); // DynamicTexture(texturesize, texturesize);
-        // nativeTexture = mapTexture.getTextureData();
-
+        mapTexture = new DynamicTexture(texturesize, texturesize, true);
         mapresource = textureManager.register("mindshafttexture", mapTexture);
         playericon = new ResourceLocation("mindshaft", "textures/playericon.png");
 
@@ -155,13 +144,10 @@ class mindshaftRenderer {
 
         zoomSpec currentzoom = zoom.getZoomSpec();
 
-        float minU = (float) (currentzoom.minU + offsetU); // 0.0;
-        float minV = (float) (currentzoom.minV + offsetV); // 0.0;
-        float maxU = (float) (currentzoom.maxU + offsetU); // 1.0;
-        float maxV = (float) (currentzoom.maxV + offsetV); // 1.0;
-
-        // Mindshaft.logger.info("u: " + minU + "~" + maxU + ", v: " + minV + "~" +
-        // maxV);
+        float minU = (float) (currentzoom.minU + offsetU);
+        float minV = (float) (currentzoom.minV + offsetV);
+        float maxU = (float) (currentzoom.maxU + offsetU);
+        float maxV = (float) (currentzoom.maxV + offsetV);
 
         renderer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
@@ -183,7 +169,6 @@ class mindshaftRenderer {
 
         stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
-        //Quaternion rotation = Vector3f.ZP.rotationDegrees(180 + player.getYHeadRot());
 
         stack.mulPose(Quaternion.fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);

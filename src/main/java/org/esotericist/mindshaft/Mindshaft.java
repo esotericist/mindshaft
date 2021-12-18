@@ -29,7 +29,6 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 public class Mindshaft {
     public static final String MODID = "mindshaft";
     public static final String NAME = "Mindshaft";
-    // public static final String VERSION = "1.0";
 
     public static final Logger logger = LogManager.getLogger();
 
@@ -75,42 +74,18 @@ public class Mindshaft {
 	public static void onModConfigEvent(final ModConfigEvent configEvent) {
         ModConfig config = configEvent.getConfig();
 		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
-            //logger.info("config");
-            mindshaftConfig.dirtyconfig = true;
-        }
-	}
-
-    /*
-
-    @SubscribeEvent
-    public static void onLoad(final ModConfig.Loading configEvent) {
-        ModConfig config = configEvent.getConfig();
-		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
-            logger.info("load");
             mindshaftConfig.dirtyconfig = true;
         }
     }
-
-    @SubscribeEvent
-    public static void onReload(final ModConfig.Reloading configEvent) {
-        ModConfig config = configEvent.getConfig();
-		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
-            logger.info("reload");
-            mindshaftConfig.dirtyconfig = true;
-        }
-    }
-    */
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
-        // logger.info("tick");
 
         if( mindshaftConfig.dirtyconfig == true ) {
             bakeandzoom();
             mindshaftConfig.dirtyconfig = false;
         }
         if (event.phase == TickEvent.Phase.END) {
-            // logger.info("tick interior");
             Minecraft mc = Minecraft.getInstance();
 
             player = mc.player;
@@ -135,7 +110,6 @@ public class Mindshaft {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void RenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
-        // logger.info("render");
         renderer.doRender(event, player, zoom);
     }
 }

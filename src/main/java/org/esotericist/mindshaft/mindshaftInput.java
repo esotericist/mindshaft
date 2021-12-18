@@ -4,8 +4,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.ClientRegistry;
 import com.mojang.blaze3d.platform.InputConstants;
 
-//import org.lwjgl.glfw.GLFW;
-
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -75,7 +73,7 @@ class inputHandler {
     public inputHandler() {
         keyBindings = new KeyMapping[4];
         pressed = new boolean[4];
-        keyBindings[0] = new KeyMapping("mindshaft.key.toggle.desc",  InputConstants.KEY_NUMPAD1 /*GLFW.glfwGetKeyScancode(GLFW.GLFW_KEY_KP_1) */, 
+        keyBindings[0] = new KeyMapping("mindshaft.key.toggle.desc",  InputConstants.KEY_NUMPAD1, 
                 "mindshaft.key.category");
         keyBindings[1] = new KeyMapping("mindshaft.key.fullscreen.desc", InputConstants.KEY_NUMPAD0,
                 "mindshaft.key.category");

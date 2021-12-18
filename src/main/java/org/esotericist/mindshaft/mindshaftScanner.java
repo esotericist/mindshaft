@@ -12,8 +12,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-//import org.apache.logging.log4j.core.Logger;
-
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -42,10 +40,6 @@ class mindshaftScanner {
     // expiry 246 - 256 (closest segments) = -10
     // random fudge of 20 == ~ 50% chance adjacent segment expires next tick
     private static final int expiryFudge = 20;
-
-    // maximum time in ticks before a segment is forcibly removed
-    // actual forced expiration time is forcedExpiry + expiry
-    // private static final int forcedExpiry = 2000;
 
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
@@ -365,10 +359,8 @@ class mindshaftScanner {
 
     public void processChunks(Level world, int pY) {
 
-        //
-        now = world.getGameTime(); // getTotalWorldTime();
+        now = world.getGameTime();
         currentDim = world.dimension().hashCode();
-        // getDimension().getType().getId();
 
         if (!requestedsegments.isEmpty()) {
             int cacheCount = 0;
