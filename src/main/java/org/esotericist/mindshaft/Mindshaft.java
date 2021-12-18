@@ -42,7 +42,6 @@ public class Mindshaft {
 
     private static mindshaftScanner scanner = new mindshaftScanner();
 
-
     public Mindshaft() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, mindshaftConfig.CLIENT_SPEC);
@@ -71,9 +70,9 @@ public class Mindshaft {
     }
 
     @SubscribeEvent
-	public static void onModConfigEvent(final ModConfigEvent configEvent) {
+    public static void onModConfigEvent(final ModConfigEvent configEvent) {
         ModConfig config = configEvent.getConfig();
-		if ( config != null &&  config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
+        if (config != null && config.getSpec() == mindshaftConfig.CLIENT_SPEC) {
             mindshaftConfig.dirtyconfig = true;
         }
     }
@@ -81,7 +80,7 @@ public class Mindshaft {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
 
-        if( mindshaftConfig.dirtyconfig == true ) {
+        if (mindshaftConfig.dirtyconfig == true) {
             bakeandzoom();
             mindshaftConfig.dirtyconfig = false;
         }
@@ -95,7 +94,7 @@ public class Mindshaft {
             }
 
             if (mindshaftConfig.enabled || zoom.fullscreen) {
-                
+
                 // this adjustment allows the player to be considered at the 'same' Y value
                 // whether on a normal block, on farmland (so slightly below normal), or
                 // on a slab (half a block above normal)
