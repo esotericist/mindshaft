@@ -1,6 +1,5 @@
 package org.esotericist.mindshaft;
 
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
@@ -158,8 +157,31 @@ class mindshaftScanner {
         return false;
     }
 
+    private boolean isTransparent(Level world, BlockPos pos) {
+        return !(world.getBlockState(pos).canOcclude());
+    }
+
+    private boolean isIntangible(Level world, BlockPos pos) {
+        return (world.getBlockState(pos).getBlockSupportShape(world, pos).isEmpty());
+    }
+
+    private boolean isAir(Level world, BlockPos pos) {
+        return world.getBlockState(pos).isAir();
+    }
+
+    private int worldMin(Level world) {
+        return world.getMinBuildHeight();
+    }
+
+    private int worldMax(Level world) {
+        return world.getMaxBuildHeight();
+    }
+
+    private int coloroutput(int red, int green, int blue) {
+        return 0xFF << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
+    }
+
     int processColumn(Level world, segmentID ID, int x, int z) {
-        int color = defaultColor;
         int red = 0;
         int blue = 0;
         int green = 0x22;
@@ -183,23 +205,21 @@ class mindshaftScanner {
             boolean intangible = false;
             boolean empty = false;
 
-            if (blockY > world.getMaxBuildHeight()) {
+            if (blockY > worldMax(world)) {
                 intangible = false;
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if (blockY >= world.getMinBuildHeight()) {
+            } else if (blockY >= worldMin(world)) {
 
                 BlockPos pos = new BlockPos(colX, blockY, colZ);
 
-                BlockState bState = world.getBlockState(pos);
-
-                if (!bState.canOcclude()) {
+                lit = isLit(world, pos);
+                if (isTransparent(world, pos)) {
                     solid = false;
-                    lit = isLit(world, pos);
-                    if (bState.getBlockSupportShape(world, pos).isEmpty()) {
+                    if (isIntangible(world, pos)) {
                         intangible = true;
-                        if (bState.isAir()) {
+                        if (isAir(world, pos)) {
                             empty = true;
                         }
                     }
@@ -242,8 +262,7 @@ class mindshaftScanner {
             }
         }
 
-        color = 0xFF << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
-        return color;
+        return coloroutput(red, green, blue);
     }
 
     layerSegment processSegment(Level world, segmentID ID) {
