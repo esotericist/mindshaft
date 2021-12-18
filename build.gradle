@@ -18,7 +18,7 @@ apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remappe
 ext.configFile = file('build.properties')
 ext.config = parseConfig(configFile)
 
-version = config.version
+version = "${config.version}-${config.mc_version}"
 group = 'esotericist.${config.mod_id}' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = config.mod_name
 
