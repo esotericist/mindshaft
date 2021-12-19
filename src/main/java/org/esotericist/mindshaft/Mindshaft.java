@@ -101,8 +101,11 @@ public class Mindshaft {
                 int pY = (int) (Math.ceil(player.getY() - (17 / 32D)));
                 BlockPos pPos = new BlockPos(player.getX(), pY, player.getZ());
 
-                scanner.processChunks(player.getCommandSenderWorld(), pY);
-                scanner.rasterizeLayers(world, pPos, renderer, zoom);
+                scanner.setWorld(player.getCommandSenderWorld());
+                scanner.setNow(world.getGameTime());
+                scanner.setDim(world.dimension().hashCode());
+                scanner.processChunks(pY);
+                scanner.rasterizeLayers(pPos, renderer, zoom);
             }
         }
     }

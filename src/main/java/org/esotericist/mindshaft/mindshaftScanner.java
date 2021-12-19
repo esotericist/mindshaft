@@ -42,6 +42,20 @@ class mindshaftScanner {
     // default color for empty layers. dark green.
     private static final int defaultColor = 0x002200;
 
+    private static Level world;
+
+    public void setWorld(Level newWorld) {
+        world = newWorld;
+    }
+
+    public void setNow(long time) {
+        now = time;
+    }
+
+    public void setDim(int ID) {
+        currentDim = ID;
+    }
+
     static class segmentID {
         int dimension, x, y, z;
 
@@ -149,31 +163,28 @@ class mindshaftScanner {
         return Math.min(Math.max(value, min), max);
     }
 
-    private boolean isLit(Level world, BlockPos pos) {
+    private boolean isLit(BlockPos pos) {
 
-        if (world.getMaxLocalRawBrightness(pos) > 0) {
-            return true;
-        }
-        return false;
+        return (world.getMaxLocalRawBrightness(pos) > 0);
     }
 
-    private boolean isTransparent(Level world, BlockPos pos) {
+    private boolean isTransparent(BlockPos pos) {
         return !(world.getBlockState(pos).canOcclude());
     }
 
-    private boolean isIntangible(Level world, BlockPos pos) {
+    private boolean isIntangible(BlockPos pos) {
         return (world.getBlockState(pos).getBlockSupportShape(world, pos).isEmpty());
     }
 
-    private boolean isAir(Level world, BlockPos pos) {
+    private boolean isAir(BlockPos pos) {
         return world.getBlockState(pos).isAir();
     }
 
-    private int worldMin(Level world) {
+    private int worldMin() {
         return world.getMinBuildHeight();
     }
 
-    private int worldMax(Level world) {
+    private int worldMax() {
         return world.getMaxBuildHeight();
     }
 
@@ -181,7 +192,7 @@ class mindshaftScanner {
         return 0xFF << 24 | clamp(blue, 0, 255) << 16 | clamp(green, 0, 255) << 8 | clamp(red, 0, 255);
     }
 
-    int processColumn(Level world, segmentID ID, int x, int z) {
+    int processColumn(segmentID ID, int x, int z) {
         int red = 0;
         int blue = 0;
         int green = 0x22;
@@ -205,21 +216,21 @@ class mindshaftScanner {
             boolean intangible = false;
             boolean empty = false;
 
-            if (blockY > worldMax(world)) {
+            if (blockY > worldMax()) {
                 intangible = false;
                 solid = false;
                 empty = true;
                 lit = true;
-            } else if (blockY >= worldMin(world)) {
+            } else if (blockY >= worldMin()) {
 
                 BlockPos pos = new BlockPos(colX, blockY, colZ);
 
-                lit = isLit(world, pos);
-                if (isTransparent(world, pos)) {
+                lit = isLit(pos);
+                if (isTransparent(pos)) {
                     solid = false;
-                    if (isIntangible(world, pos)) {
+                    if (isIntangible(pos)) {
                         intangible = true;
-                        if (isAir(world, pos)) {
+                        if (isAir(pos)) {
                             empty = true;
                         }
                     }
@@ -265,13 +276,13 @@ class mindshaftScanner {
         return coloroutput(red, green, blue);
     }
 
-    layerSegment processSegment(Level world, segmentID ID) {
+    layerSegment processSegment(segmentID ID) {
         layerSegment segment = new layerSegment(defaultColor);
 
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
 
-                int c = processColumn(world, ID, x, z);
+                int c = processColumn(ID, x, z);
                 segment.setColor(x, z, c);
             }
         }
@@ -279,8 +290,8 @@ class mindshaftScanner {
         return segment;
     }
 
-    layerSegment addLayerSegment(Level world, segmentID ID) {
-        layerSegment segment = processSegment(world, ID);
+    layerSegment addLayerSegment(segmentID ID) {
+        layerSegment segment = processSegment(ID);
         segment.expiration = now + expiry + random.nextInt(expiryFudge);
         segmentsKnown.put(ID, segment);
 
@@ -288,7 +299,7 @@ class mindshaftScanner {
 
     }
 
-    layerSegment getLayerSegment(Level world, segmentID ID, int distFactor) {
+    layerSegment getLayerSegment(segmentID ID, int distFactor) {
         layerSegment thisSegment = segmentsKnown.get(ID);
         if (thisSegment == null) {
             requestedsegments.add(new requestID(ID, distFactor, true));
@@ -301,7 +312,7 @@ class mindshaftScanner {
             if (thisSegment.stale == false && thisSegment.expiration - distFactor <= now) {
                 if (distFactor == 0) {
                     segmentsKnown.remove(ID);
-                    thisSegment = addLayerSegment(world, ID);
+                    thisSegment = addLayerSegment(ID);
                 } else {
                     thisSegment.markStale();
                 }
@@ -320,7 +331,7 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(Level world, BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
+    public void rasterizeLayers(BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
         if (currentTick == 0) {
             pX = pPos.getX() >> 4;
             pZ = pPos.getZ() >> 4;
@@ -360,7 +371,7 @@ class mindshaftScanner {
             distFactor = 256 - ((dX + dZ) << 1);
 
             segmentID ID = new segmentID(currentDim, cX + pcX, pY, cZ + pcZ);
-            layerSegment thisSegment = getLayerSegment(world, ID, distFactor);
+            layerSegment thisSegment = getLayerSegment(ID, distFactor);
             if (thisSegment == null) {
                 continue;
             }
@@ -375,10 +386,7 @@ class mindshaftScanner {
 
     }
 
-    public void processChunks(Level world, int pY) {
-
-        now = world.getGameTime();
-        currentDim = world.dimension().hashCode();
+    public void processChunks(int pY) {
 
         if (!requestedsegments.isEmpty()) {
             int cacheCount = 0;
@@ -392,7 +400,7 @@ class mindshaftScanner {
                 if (segmentsKnown.containsKey(ID)) {
                     segmentsKnown.remove(ID);
                 }
-                addLayerSegment(world, ID);
+                addLayerSegment(ID);
             }
         }
         if (!segmentsKnown.isEmpty()) {
