@@ -100,12 +100,14 @@ public class Mindshaft {
                 // on a slab (half a block above normal)
                 int pY = (int) (Math.ceil(player.getY() - (17 / 32D)));
                 BlockPos pPos = new BlockPos(player.getX(), pY, player.getZ());
+                double rawV = player.getDeltaMovement().y;
+                int vY = (int) (rawV > 0 ? Math.ceil(rawV) : Math.floor(rawV));
 
                 scanner.setWorld(player.getCommandSenderWorld());
                 scanner.setNow(world.getGameTime());
                 scanner.setDim(world.dimension().hashCode());
-                scanner.processChunks(pY);
-                scanner.rasterizeLayers(pPos, renderer, zoom);
+                scanner.processChunks(pY, vY);
+                scanner.rasterizeLayers(pPos, vY, renderer, zoom);
             }
         }
     }
