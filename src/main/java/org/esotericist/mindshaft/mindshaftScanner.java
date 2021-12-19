@@ -85,27 +85,20 @@ class mindshaftScanner {
     }
 
     static class requestID extends segmentID implements Comparable<requestID> {
-        int dist;
-        boolean isNew;
+        int priority;
 
-        public requestID(segmentID ID, int newDist, boolean newRequest) {
+        public requestID(segmentID ID, int newPriority) {
 
             super(ID.dimension, ID.x, ID.y, ID.z);
-            dist = newDist;
-            isNew = newRequest;
+            priority = newPriority;
         }
 
         public int compareTo(requestID other) {
             int c = 0;
-            if (this.isNew && !other.isNew) {
-                c = -1;
-            } else if (!this.isNew && other.isNew) {
-                c = 1;
-            } else {
-                // larger values are 'closer' due to other implementation details
-                // so the order of this comparison is inverted relative others
-                c = other.dist - this.dist;
-            }
+            
+            // higher priorities come before lower priorities.
+            c = other.priority - this.priority;
+            
             if (c == 0) {
                 c = this.x - other.x;
             }
@@ -159,7 +152,8 @@ class mindshaftScanner {
     }
 
     static segmentCache segmentsKnown = new segmentCache(512);
-    static TreeSet<requestID> requestedsegments = new TreeSet<requestID>();
+    static TreeSet<requestID> requestednewsegments = new TreeSet<requestID>();
+    static TreeSet<requestID> requestedstalesegments = new TreeSet<requestID>();
 
     private int clamp(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
@@ -303,23 +297,19 @@ class mindshaftScanner {
 
     }
 
-    layerSegment getLayerSegment(segmentID ID, int distFactor) {
+    layerSegment getLayerSegment(segmentID ID, int priority) {
+        if( priority < 0 ) {
+            segmentsKnown.remove(ID);
+            return addLayerSegment(ID);
+        }
         layerSegment thisSegment = segmentsKnown.get(ID);
         if (thisSegment == null) {
-            requestedsegments.add(new requestID(ID, distFactor, true));
+                requestednewsegments.add(new requestID(ID, priority));
         } else if (thisSegment.stale == true) {
-            requestedsegments.add(new requestID(ID, distFactor, false));
+            requestedstalesegments.add(new requestID(ID, priority));
         } else {
-            if (distFactor < 3) {
-                distFactor = 0;
-            }
-            if (thisSegment.stale == false && thisSegment.expiration - distFactor <= now) {
-                if (distFactor == 0) {
-                    segmentsKnown.remove(ID);
-                    thisSegment = addLayerSegment(ID);
-                } else {
-                    thisSegment.markStale();
-                }
+            if (thisSegment.stale == false && thisSegment.expiration - priority <= now) {
+                thisSegment.markStale();
             }
         }
 
@@ -335,7 +325,7 @@ class mindshaftScanner {
         }
     }
 
-    public void rasterizeLayers(BlockPos pPos, mindshaftRenderer renderer, zoomState zoom) {
+    public void rasterizeLayers(BlockPos pPos, int vY, mindshaftRenderer renderer, zoomState zoom) {
         if (currentTick == 0) {
             pX = pPos.getX() >> 4;
             pZ = pPos.getZ() >> 4;
@@ -370,16 +360,26 @@ class mindshaftScanner {
                 continue;
             }
 
+            // standard distance algo is a^2 + b^2 = c^2.
+            // squaring a value helpfully gets us a positive value regardless of original sign
+            // and 16^2 is 256
+            // the bitshift is to help increase the magnitude of the values relative to 256.
             dX = (cX - 8) * (cX - 8);
             dZ = (cZ - 8) * (cZ - 8);
-            distFactor = 256 - ((dX + dZ) << 1);
+            int dist = dX + dZ;
+            distFactor = 256 - (dist << 1);
 
+            for( int yoffset = -1 + vY; yoffset < 1 + vY  ; yoffset++ ) {
+                segmentID ID = new segmentID(currentDim, cX + pcX, pY + yoffset, cZ + pcZ);
+                getLayerSegment(ID, distFactor );
+            }
             segmentID ID = new segmentID(currentDim, cX + pcX, pY, cZ + pcZ);
-            layerSegment thisSegment = getLayerSegment(ID, distFactor);
-            if (thisSegment == null) {
+            layerSegment resultSegment = getLayerSegment(ID, dist < 2 ? -1 : distFactor);
+
+            if (resultSegment == null) {
                 continue;
             }
-            copyLayer(renderer, thisSegment, cX, cZ);
+            copyLayer(renderer, resultSegment, cX, cZ);
         }
 
         if (currentTick++ >= mindshaftConfig.refreshdelay) {
@@ -390,22 +390,38 @@ class mindshaftScanner {
 
     }
 
-    public void processChunks(int pY) {
-
-        if (!requestedsegments.isEmpty()) {
-            int cacheCount = 0;
-            Iterator<requestID> itr = requestedsegments.iterator();
-            while (itr.hasNext() && cacheCount++ <= mindshaftConfig.chunkrate) {
-                requestID ID = itr.next();
-                itr.remove();
-                if (Math.abs(pY - ID.y) > 2 || (Math.abs(pX - ID.x) > 12) || (Math.abs(pZ - ID.z) > 12)) {
+    private int processqueue(TreeSet<requestID> queue, int pY, int vY, int cacheRemainder, boolean allowStale ) {
+        Iterator<requestID> itr = queue.iterator();
+        while (itr.hasNext() && cacheRemainder > 0) {
+            requestID ID = itr.next();
+            itr.remove();
+            if (Math.abs(pY - ID.y) > (3 + vY) || (Math.abs(pX - ID.x) > 12) || (Math.abs(pZ - ID.z) > 12)) {
+                continue;
+            }
+            if (segmentsKnown.containsKey(ID)) {
+                if( allowStale ) { 
+                    segmentsKnown.remove(ID);
+                } else {
                     continue;
                 }
-                if (segmentsKnown.containsKey(ID)) {
-                    segmentsKnown.remove(ID);
-                }
-                addLayerSegment(ID);
             }
+            addLayerSegment(ID);
+            cacheRemainder--;
+        }
+        return cacheRemainder;
+    }
+
+    public void processChunks(int pY, int vY) {
+
+        int cacheRemainder = mindshaftConfig.chunkrate;
+
+        if (!requestednewsegments.isEmpty()) {
+            cacheRemainder = processqueue(requestednewsegments, pY, vY, cacheRemainder, false);
+        }
+        if (!requestedstalesegments.isEmpty()) {
+
+            cacheRemainder = processqueue(requestedstalesegments, pY, vY, cacheRemainder, true);
+
         }
         if (!segmentsKnown.isEmpty()) {
             int removeCount = 0;
