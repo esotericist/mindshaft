@@ -14,7 +14,7 @@ class inputHandler {
     private boolean[] pressed;
 
     @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event) {
+    public void onKeyInput(InputEvent.Key event) {
 
         Minecraft mc = Minecraft.getInstance();
         if (!mc.isWindowActive()) {

@@ -15,7 +15,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -113,7 +113,7 @@ public class Mindshaft {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void RenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
+    public void RenderGameOverlayEvent(RenderGuiOverlayEvent.Post event) {
         renderer.doRender(event, player, zoom);
     }
 }

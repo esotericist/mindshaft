@@ -2,7 +2,7 @@ package org.esotericist.mindshaft;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -16,7 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.resources.ResourceLocation;
 import com.mojang.math.Quaternion;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -82,7 +82,7 @@ class mindshaftRenderer {
     }
 
     
-    public void doRender(RenderGameOverlayEvent.Post event, Player player, zoomState zoom) {
+    public void doRender(RenderGuiOverlayEvent.Post event, Player player, zoomState zoom) {
 
         if ((!mindshaftConfig.enabled) && !(zoom.fullscreen) || (player == null)) {
             return;
@@ -172,7 +172,7 @@ class mindshaftRenderer {
 
         stack.mulPose(Quaternion.fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
-        ForgeIngameGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
+        ForgeGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
         stack.popPose();
     }
