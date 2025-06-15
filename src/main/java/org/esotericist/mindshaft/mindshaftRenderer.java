@@ -90,7 +90,7 @@ class mindshaftRenderer {
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder renderer = tessellator.getBuilder();
-        PoseStack stack = event.getMatrixStack();
+        PoseStack stack = event.getPoseStack();
 
         stack.pushPose();
 
