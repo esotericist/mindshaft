@@ -45,6 +45,7 @@ public class Mindshaft {
     public Mindshaft() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, mindshaftConfig.CLIENT_SPEC);
+        input = new inputHandler();
     }
 
     public static class assetinit implements Runnable {
@@ -63,7 +64,6 @@ public class Mindshaft {
         logger.info("setup");
         MinecraftForge.EVENT_BUS.register(this);
         bakeandzoom();
-        input = new inputHandler();
         MinecraftForge.EVENT_BUS.register(input);
         Minecraft.getInstance().tell(new assetinit());
 
