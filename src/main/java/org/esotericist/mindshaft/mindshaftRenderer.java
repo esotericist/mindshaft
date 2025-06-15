@@ -1,7 +1,6 @@
 package org.esotericist.mindshaft;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.GameRenderer;
@@ -94,7 +93,7 @@ class mindshaftRenderer {
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder renderer = tessellator.getBuilder();
-        PoseStack stack = event.getPoseStack();
+        PoseStack stack = event.getGuiGraphics().pose();
 
         stack.pushPose();
 
@@ -176,7 +175,8 @@ class mindshaftRenderer {
 
         stack.mulPose(fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
-        ForgeGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
+
+        event.getGuiGraphics().blit(playericon, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
         stack.popPose();
     }
