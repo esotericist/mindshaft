@@ -1,13 +1,17 @@
 package org.esotericist.mindshaft;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.ClientRegistry;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 
+@Mod.EventBusSubscriber(modid = Mindshaft.MODID, bus = Bus.MOD)
 class inputHandler {
 
     private static KeyMapping[] keyBindings;
@@ -82,10 +86,15 @@ class inputHandler {
         keyBindings[3] = new KeyMapping("mindshaft.key.zoomout.desc", InputConstants.KEY_NUMPAD3,
                 "mindshaft.key.category");
 
+    }
+
+    @SubscribeEvent
+    public static void RegisterBindings(RegisterKeyMappingsEvent e) {
         for (int i = 0; i < keyBindings.length; ++i) {
-            ClientRegistry.registerKeyBinding(keyBindings[i] );
-            pressed[i] = false;
+
+            e.register(keyBindings[i]);
         }
+
     }
 
 }
