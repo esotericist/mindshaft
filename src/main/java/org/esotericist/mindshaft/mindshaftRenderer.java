@@ -1,23 +1,18 @@
 package org.esotericist.mindshaft;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.resources.ResourceLocation;
-import com.mojang.math.Quaternion;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 
+import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
 class mindshaftRenderer {
@@ -29,6 +24,15 @@ class mindshaftRenderer {
 
     private int lastX = 0;
     private int lastZ = 0;
+
+    private static Quaternionf fromXYZ(float pX, float pY, float pZ) {
+        Quaternionf quaternion = new Quaternionf(0, 0, 0, 1);
+        quaternion.mul(new Quaternionf((float)Math.sin((double)(pX / 2.0F)), 0.0F, 0.0F, (float)Math.cos((double)(pX / 2.0F))));
+        quaternion.mul(new Quaternionf(0.0F, (float)Math.sin((double)(pY / 2.0F)), 0.0F, (float)Math.cos((double)(pY / 2.0F))));
+        quaternion.mul(new Quaternionf(0.0F, 0.0F, (float)Math.sin((double)(pZ / 2.0F)), (float)Math.cos((double)(pZ / 2.0F))));
+        return quaternion;
+    }
+
 
     // 256 x 256 for the map texture
     // it's possible to change this but there's not a lot of benefit
@@ -170,7 +174,7 @@ class mindshaftRenderer {
         stack.translate(minX + (mapsize / 2), minY + (mapsize / 2), 0.0d);
         double centeroffset = cursorsize / 16.0;
 
-        stack.mulPose(Quaternion.fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
+        stack.mulPose(fromXYZ(0f, 0f, (180 + player.getYHeadRot()) * ((float)Math.PI / 180F)));
         stack.translate(-((cursorsize - centeroffset) / 2), -((cursorsize - centeroffset) / 2), 0);
         ForgeGui.blit(stack, 0, 0, 0f, 0f, cursorsize, cursorsize, cursorsize, cursorsize);
 
