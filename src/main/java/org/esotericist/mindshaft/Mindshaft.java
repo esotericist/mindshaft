@@ -99,7 +99,7 @@ public class Mindshaft {
                 // whether on a normal block, on farmland (so slightly below normal), or
                 // on a slab (half a block above normal)
                 int pY = (int) (Math.ceil(player.getY() - (17 / 32D)));
-                BlockPos pPos = new BlockPos(player.getX(), pY, player.getZ());
+                BlockPos pPos = new BlockPos(((int)player.getX()), pY, ((int)player.getZ()));
                 double rawV = player.getDeltaMovement().y;
                 int vY = (int) (rawV > 0 ? Math.ceil(rawV) : Math.floor(rawV));
 
